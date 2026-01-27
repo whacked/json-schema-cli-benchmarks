@@ -26,12 +26,14 @@
 
 (defn sh
   "Run command, return {:exit :out :err}"
-  [& args]
+  ^java.util.Map [& args]
   (-> (p/process args {:out :string :err :string})
       deref
       (select-keys [:exit :out :err])))
 
-(defn sh-ok? [& args]
+(defn sh-ok?
+  "Run command, return true if exit code is 0"
+  ^Boolean [& args]
   (-> (apply sh args) :exit zero?))
 
 (defn sh-json
@@ -41,7 +43,7 @@
 
 (defn sh-stdin
   "Run command with stdin data"
-  [stdin-str & args]
+  ^java.util.Map [^String stdin-str & args]
   (-> (p/process args {:in stdin-str :out :string :err :string})
       deref
       (select-keys [:exit :out :err])))
@@ -52,7 +54,7 @@
 
 (defn manifest-path
   "Returns path to manifest (yaml preferred) or nil"
-  [draft]
+  ^java.nio.file.Path [^String draft]
   (let [yaml-path (fs/path experiments-dir draft "manifest.yaml")
         json-path (fs/path experiments-dir draft "manifest.json")]
     (cond
@@ -60,8 +62,8 @@
       (fs/exists? json-path) json-path)))
 
 (defn load-manifest
-  "Load manifest as Clojure data"
-  [draft]
+  "Load manifest as Clojure data, or nil if not found"
+  ^java.util.Map [^String draft]
   (when-let [path (manifest-path draft)]
     (let [content (slurp (str path))]
       (if (str/ends-with? (str path) ".yaml")
@@ -69,8 +71,8 @@
         (json/parse-string content true)))))
 
 (defn save-manifest-yaml
-  "Save data as YAML manifest"
-  [draft data]
+  "Save data as YAML manifest, returns path"
+  ^java.nio.file.Path [^String draft ^java.util.Map data]
   (let [path (fs/path experiments-dir draft "manifest.yaml")]
     (spit (str path) (yaml/generate-string data :dumper-options {:flow-style :block}))
     path))
@@ -89,7 +91,7 @@
 
 (defn gather-state
   "Collect all state needed for status display. Pure data, no side effects."
-  [draft]
+  ^java.util.Map [^String draft]
   (let [exp-dir (fs/path experiments-dir draft)
         mpath (manifest-path draft)
         manifest (load-manifest draft)
@@ -119,7 +121,7 @@
 
 (defn add-schema-validation
   "Add schema validation result (requires shell call)"
-  [state]
+  ^java.util.Map [^java.util.Map state]
   (if-let [mpath (:manifest-path state)]
     (let [schema (str (fs/path schemas-dir "manifest.schema.json"))
           result (sh "check-jsonschema" "--schemafile" schema mpath)]
@@ -132,44 +134,42 @@
 ;; Step definitions (single source of truth)
 ;; -----------------------------------------------------------------------------
 
+(defrecord Step [^clojure.lang.Keyword id
+                 ^String name
+                 ^clojure.lang.IFn check])
+
 (def steps
-  "Ordered steps with predicates. Each step has:
-   :id, :name, :check (fn [state] -> {:done bool :mark str :detail str})"
-  [{:id :new
-    :name "new"
-    :check (fn [s]
+  "Ordered steps with predicates. Each step's check fn returns {:done bool :mark str :detail str}"
+  [(->Step :new "new"
+           (fn [s]
              (if (:manifest-path s)
                {:done true :detail (:manifest-name s)}
-               {:done false :detail "create experiment"}))}
+               {:done false :detail "create experiment"})))
 
-   {:id :schema
-    :name "schema"
-    :check (fn [s]
+   (->Step :schema "schema"
+           (fn [s]
              (cond
                (not (:manifest-path s)) {:done false :detail "no manifest"}
                (:schema-valid s) {:done true :detail (str (:manifest-name s) " valid")}
-               :else {:done false :mark "!" :detail (str (:manifest-name s) " INVALID")}))}
+               :else {:done false :mark "!" :detail (str (:manifest-name s) " INVALID")})))
 
-   {:id :edit
-    :name "edit"
-    :check (fn [s]
+   (->Step :edit "edit"
+           (fn [s]
              (cond
                (not (:manifest-path s)) {:done false :detail "add cases to manifest"}
                (pos? (:case-count s)) {:done true :detail (str (:case-count s) " cases defined")}
-               :else {:done false :detail "add cases to manifest"}))}
+               :else {:done false :detail "add cases to manifest"})))
 
-   {:id :hydrate
-    :name "hydrate"
-    :check (fn [s]
+   (->Step :hydrate "hydrate"
+           (fn [s]
              (cond
                ;; Can't be done if no cases defined
                (not (pos? (:case-count s))) {:done false :detail "create case directories"}
                (empty? (:missing-dirs s)) {:done true :detail "directories exist"}
-               :else {:done false :detail (str "missing: " (str/join ", " (:missing-dirs s)))}))}
+               :else {:done false :detail (str "missing: " (str/join ", " (:missing-dirs s)))})))
 
-   {:id :content
-    :name "content"
-    :check (fn [s]
+   (->Step :content "content"
+           (fn [s]
              (cond
                ;; Can't be done if no cases defined
                (not (pos? (:case-count s))) {:done false :detail "add schema.json / instance.json"}
@@ -178,20 +178,19 @@
                (seq (:missing-instances s))
                {:done false :detail (str "missing instance.json: " (str/join ", " (:missing-instances s)))}
                :else
-               {:done true :detail "all files present"}))}
+               {:done true :detail "all files present"})))
 
-   {:id :validate
-    :name "validate"
-    :check (fn [s]
+   (->Step :validate "validate"
+           (fn [s]
              ;; Validate is optional - mark as "?" but don't block ready state
              ;; Only show as actionable if content is complete
              (if (pos? (:case-count s))
                {:done true :mark "?" :detail "run make validate-experiment"}
-               {:done false :detail "check structure"}))}])
+               {:done false :detail "check structure"})))])
 
 (defn next-action
   "Determine what user should do next"
-  [state first-incomplete-step]
+  ^String [^java.util.Map state ^Step first-incomplete-step]
   (case (:id first-incomplete-step)
     :new (str "make new-experiment DRAFT=" (:draft state))
     :schema (str "fix " (:manifest-name state) " errors")
@@ -207,7 +206,7 @@
 
 (defn render-status
   "Render status checklist from state"
-  [state]
+  ^nil [^java.util.Map state]
   (println)
   (println (str "=== " (:draft state) " ==="))
 
@@ -230,7 +229,7 @@
 
 (defn render-state-debug
   "Dump state for debugging"
-  [state]
+  ^nil [^java.util.Map state]
   (println (json/generate-string (dissoc state :manifest) {:pretty true})))
 
 ;; -----------------------------------------------------------------------------
@@ -239,7 +238,7 @@
 
 (defn discover-drafts
   "Find all drafts that have a manifest"
-  []
+  ^clojure.lang.ISeq []
   (->> (fs/list-dir experiments-dir)
        (filter fs/directory?)
        (filter #(or (fs/exists? (fs/path % "manifest.yaml"))
@@ -251,7 +250,8 @@
 ;; Commands
 ;; -----------------------------------------------------------------------------
 
-(defn cmd-new [draft]
+(defn cmd-new
+  ^nil [^String draft]
   (when (manifest-path draft)
     (binding [*out* *err*]
       (println (str "ERROR: manifest already exists: " (manifest-path draft))))
@@ -268,7 +268,8 @@
 
   (cmd-status draft))
 
-(defn cmd-hydrate [draft]
+(defn cmd-hydrate
+  ^nil [^String draft]
   (let [manifest (load-manifest draft)]
     (when-not manifest
       (binding [*out* *err*] (println "ERROR: manifest not found"))
@@ -287,7 +288,8 @@
 
   (cmd-status draft))
 
-(defn cmd-validate [draft]
+(defn cmd-validate
+  ^nil [^String draft]
   (let [manifest (load-manifest draft)]
     (when-not manifest
       (binding [*out* *err*] (println "ERROR: manifest not found"))
@@ -306,18 +308,20 @@
 
 (defn cmd-status
   "Show status for one draft, or list all drafts if none given"
+  ^nil
   ([]
    (let [drafts (discover-drafts)]
      (if (empty? drafts)
        (println "No experiments found. Run: new <draft>")
        (doseq [draft drafts]
          (cmd-status draft)))))
-  ([draft]
+  ([^String draft]
    (-> (gather-state draft)
        (add-schema-validation)
        (render-status))))
 
-(defn cmd-debug [draft]
+(defn cmd-debug
+  ^nil [^String draft]
   (-> (gather-state draft)
       (add-schema-validation)
       (render-state-debug)))
@@ -328,7 +332,8 @@
 
 (def script-name (fs/file-name *file*))
 
-(defn usage []
+(defn usage
+  ^nil []
   (println (str "Usage: " script-name " <command> [draft]"))
   (println)
   (println "Commands:")
