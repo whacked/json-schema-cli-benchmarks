@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "BenchmarkResult": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/EventEnvelope"
+        },
+        {
+          "properties": {
+            "event": {
+              "const": "benchmark_result"
+            },
+            "hyperfine_json_path": {
+              "description": "Path to raw hyperfine JSON output",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "max_s": {
+              "description": "Maximum execution time in seconds",
+              "type": "number"
+            },
+            "mean_s": {
+              "description": "Mean execution time in seconds",
+              "type": "number"
+            },
+            "min_s": {
+              "description": "Minimum execution time in seconds",
+              "type": "number"
+            },
+            "runs": {
+              "description": "Number of benchmark runs",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "stddev_s": {
+              "description": "Standard deviation in seconds",
+              "type": "number"
+            }
+          },
+          "required": [
+            "mean_s",
+            "stddev_s",
+            "min_s",
+            "max_s",
+            "runs"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CorrectnessResult": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/EventEnvelope"
+        },
+        {
+          "properties": {
+            "event": {
+              "const": "correctness_result"
+            },
+            "exit_code": {
+              "description": "Raw exit code from adapter",
+              "type": "integer"
+            },
+            "expected": {
+              "description": "Expected validity from manifest",
+              "type": "boolean"
+            },
+            "match": {
+              "description": "Did outcome match expected?",
+              "type": "boolean"
+            },
+            "outcome": {
+              "description": "Interpreted validation outcome",
+              "enum": [
+                "VALID",
+                "INVALID",
+                "UNSUPPORTED",
+                "ERROR"
+              ],
+              "type": "string"
+            },
+            "stderr_path": {
+              "description": "Path to captured stderr",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stdout_path": {
+              "description": "Path to captured stdout",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "exit_code",
+            "outcome",
+            "expected",
+            "match"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EventEnvelope": {
+      "description": "Common fields for all events",
+      "properties": {
+        "case_id": {
+          "description": "Case identifier from manifest",
+          "type": "string"
+        },
+        "draft": {
+          "description": "JSON Schema draft identifier",
+          "type": "string"
+        },
+        "event": {
+          "description": "Event type discriminator",
+          "type": "string"
+        },
+        "input_id": {
+          "description": "Relative path of instance file (for instance operations only)",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "job_id": {
+          "description": "Stable job hash (sha256 of canonical job dimensions)",
+          "type": "string"
+        },
+        "mode": {
+          "description": "Input mode for the operation",
+          "enum": [
+            "file",
+            "stdin"
+          ],
+          "type": "string"
+        },
+        "operation": {
+          "description": "Operation type: schema validation or instance validation",
+          "enum": [
+            "schema",
+            "instance"
+          ],
+          "type": "string"
+        },
+        "status": {
+          "description": "Execution status",
+          "enum": [
+            "ok",
+            "unsupported",
+            "error"
+          ],
+          "type": "string"
+        },
+        "tool": {
+          "description": "Tool adapter name",
+          "type": "string"
+        },
+        "tool_version": {
+          "description": "Observed tool version string",
+          "type": "string"
+        },
+        "ts": {
+          "description": "ISO-8601 timestamp",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event",
+        "ts",
+        "draft",
+        "tool",
+        "tool_version",
+        "case_id",
+        "operation",
+        "mode",
+        "job_id",
+        "status"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/whacked/json-schema-cli-benchmark/schemas/events.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Event record for benchmark runs (append-only events.jsonl)",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/CorrectnessResult"
+    },
+    {
+      "$ref": "#/$defs/BenchmarkResult"
+    }
+  ],
+  "title": "Benchmark Event"
+}

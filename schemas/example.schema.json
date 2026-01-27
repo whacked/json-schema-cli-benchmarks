@@ -1,0 +1,22 @@
+{
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "someNumber": {
+      "type": "number"
+    },
+    "version": {
+      "enum": [
+        "draft-01",
+        "draft-02"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "version"
+  ],
+  "type": "object"
+}

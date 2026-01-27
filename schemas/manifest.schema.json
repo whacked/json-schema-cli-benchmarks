@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "CaseSpec": {
+      "additionalProperties": false,
+      "description": "Specification for a single test case",
+      "properties": {
+        "description": {
+          "description": "Human-readable description of the test case",
+          "type": "string"
+        },
+        "instance_valid": {
+          "description": "Expected result of instance validation, or null if not applicable (when schema_valid is false)",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "instances": {
+          "description": "Glob pattern for instance files relative to case directory (e.g. 'instances/**/*.json')",
+          "type": "string"
+        },
+        "meta": {
+          "additionalProperties": true,
+          "description": "Arbitrary metadata for reporting/filtering",
+          "type": "object"
+        },
+        "schema_valid": {
+          "description": "Expected result of schema validation against metaschema",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schema_valid",
+        "instance_valid"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/whacked/json-schema-cli-benchmark/schemas/manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Declares test cases and expected outcomes for a JSON Schema draft benchmark experiment",
+  "properties": {
+    "cases": {
+      "additionalProperties": {
+        "$ref": "#/$defs/CaseSpec"
+      },
+      "description": "Mapping from case_id to case specification",
+      "type": "object"
+    },
+    "draft": {
+      "description": "JSON Schema draft identifier",
+      "enum": [
+        "draft-04",
+        "draft-06",
+        "draft-07",
+        "draft-2019-09",
+        "draft-2020-12"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "draft",
+    "cases"
+  ],
+  "title": "Experiment Manifest",
+  "type": "object"
+}
