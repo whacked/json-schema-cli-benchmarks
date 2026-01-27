@@ -16,7 +16,6 @@ from __future__ import annotations
 import glob
 import hashlib
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -25,6 +24,7 @@ from typing import Iterator, Literal
 
 import orjson
 import typer
+import yaml
 from loguru import logger
 from pydantic import ValidationError
 
@@ -74,13 +74,20 @@ def compute_job_id(
 
 
 def load_manifest(experiment_dir: Path) -> ExperimentManifest:
-    """Load and validate manifest.json."""
-    manifest_path = experiment_dir / "manifest.json"
-    if not manifest_path.exists():
-        raise FileNotFoundError(f"Manifest not found: {manifest_path}")
+    """Load and validate manifest (YAML preferred, JSON fallback)."""
+    yaml_path = experiment_dir / "manifest.yaml"
+    json_path = experiment_dir / "manifest.json"
 
-    with open(manifest_path) as f:
-        data = json.load(f)
+    if yaml_path.exists():
+        with open(yaml_path) as f:
+            data = yaml.safe_load(f)
+    elif json_path.exists():
+        with open(json_path) as f:
+            data = json.load(f)
+    else:
+        raise FileNotFoundError(
+            f"Manifest not found: {yaml_path} or {json_path}"
+        )
 
     # Remove deprecated meta_schema field if present
     data.pop("meta_schema", None)

@@ -3,7 +3,7 @@
 # Usage: ./tools/experiment-manager.sh <command> <draft>
 #
 # Commands:
-#   new       Create new experiment with manifest.json
+#   new       Create new experiment with manifest.yaml
 #   hydrate   Create case directories from manifest
 #   validate  Validate structure matches manifest
 #   status    Show setup progress and next steps
@@ -23,7 +23,7 @@ usage() {
 Usage: $0 <command> <draft>
 
 Commands:
-  new       Create new experiment with manifest.json
+  new       Create new experiment with manifest.yaml
   hydrate   Create case directories from manifest
   validate  Validate structure matches manifest
   status    Show setup progress and next steps
@@ -36,45 +36,74 @@ EOF
 }
 
 # -----------------------------------------------------------------------------
+# Manifest helpers (YAML preferred, JSON fallback)
+# -----------------------------------------------------------------------------
+
+# Returns path to manifest file (yaml preferred)
+manifest_path() {
+    local yaml_path="$EXPERIMENTS_DIR/$DRAFT/manifest.yaml"
+    local json_path="$EXPERIMENTS_DIR/$DRAFT/manifest.json"
+    if [[ -f "$yaml_path" ]]; then
+        echo "$yaml_path"
+    elif [[ -f "$json_path" ]]; then
+        echo "$json_path"
+    else
+        echo ""
+    fi
+}
+
+# Load manifest as JSON (converts yaml if needed)
+load_manifest() {
+    local path
+    path=$(manifest_path)
+    [[ -n "$path" ]] || return 1
+    if [[ "$path" == *.yaml ]]; then
+        yq -o j "$path"
+    else
+        cat "$path"
+    fi
+}
+
+# -----------------------------------------------------------------------------
 # State checks
 # -----------------------------------------------------------------------------
 
 has_dir() { [[ -d "$EXPERIMENTS_DIR/$DRAFT" ]]; }
-has_manifest() { [[ -f "$EXPERIMENTS_DIR/$DRAFT/manifest.json" ]]; }
-has_cases_defined() { has_manifest && [[ $(jq '.cases | keys | length' "$EXPERIMENTS_DIR/$DRAFT/manifest.json") -gt 0 ]]; }
+has_manifest() { [[ -n "$(manifest_path)" ]]; }
+has_cases_defined() { has_manifest && [[ $(load_manifest | jq '.cases | keys | length') -gt 0 ]]; }
 has_cases_dir() { [[ -d "$EXPERIMENTS_DIR/$DRAFT/cases" ]]; }
 
 # Schema validation (returns 0 if valid, 1 if invalid)
 manifest_schema_valid() {
     has_manifest || return 1
     check-jsonschema --schemafile "$SCHEMAS_DIR/manifest.schema.json" \
-        "$EXPERIMENTS_DIR/$DRAFT/manifest.json" >/dev/null 2>&1
+        "$(manifest_path)" >/dev/null 2>&1
 }
 
 # Capture schema validation errors
 manifest_schema_errors() {
     has_manifest || return
     check-jsonschema --schemafile "$SCHEMAS_DIR/manifest.schema.json" \
-        "$EXPERIMENTS_DIR/$DRAFT/manifest.json" 2>&1 || true
+        "$(manifest_path)" 2>&1 || true
 }
 
 missing_case_dirs() {
     has_manifest || return
-    for case_name in $(jq -r '.cases | keys[]' "$EXPERIMENTS_DIR/$DRAFT/manifest.json"); do
+    for case_name in $(load_manifest | jq -r '.cases | keys[]'); do
         [[ -d "$EXPERIMENTS_DIR/$DRAFT/cases/$case_name" ]] || echo "$case_name"
     done
 }
 
 missing_schemas() {
     has_manifest || return
-    for case_name in $(jq -r '.cases | keys[]' "$EXPERIMENTS_DIR/$DRAFT/manifest.json"); do
+    for case_name in $(load_manifest | jq -r '.cases | keys[]'); do
         [[ -f "$EXPERIMENTS_DIR/$DRAFT/cases/$case_name/schema.json" ]] || echo "$case_name"
     done
 }
 
 missing_instances() {
     has_manifest || return
-    for case_name in $(jq -r '.cases | to_entries[] | select(.value.instance_valid != null) | .key' "$EXPERIMENTS_DIR/$DRAFT/manifest.json"); do
+    for case_name in $(load_manifest | jq -r '.cases | to_entries[] | select(.value.instance_valid != null) | .key'); do
         [[ -f "$EXPERIMENTS_DIR/$DRAFT/cases/$case_name/instance.json" ]] || echo "$case_name"
     done
 }
@@ -84,21 +113,23 @@ missing_instances() {
 # -----------------------------------------------------------------------------
 
 cmd_new() {
-    has_manifest && die "manifest.json already exists: $EXPERIMENTS_DIR/$DRAFT/manifest.json"
+    has_manifest && die "manifest already exists: $(manifest_path)"
 
     mkdir -p "$EXPERIMENTS_DIR/$DRAFT"
+    # Generate YAML manifest (more human-friendly)
     jsonnet --ext-str "draft=$DRAFT" "$DIRSCHEMA_DIR/manifest.template.jsonnet" \
-        > "$EXPERIMENTS_DIR/$DRAFT/manifest.json"
+        | yq -o y -P \
+        > "$EXPERIMENTS_DIR/$DRAFT/manifest.yaml"
 
-    echo "Created: $EXPERIMENTS_DIR/$DRAFT/manifest.json"
+    echo "Created: $EXPERIMENTS_DIR/$DRAFT/manifest.yaml"
     cmd_status
 }
 
 cmd_hydrate() {
-    has_manifest || die "manifest.json not found. Run: $0 new $DRAFT"
-    has_cases_defined || die "No cases defined in manifest.json. Edit it first."
+    has_manifest || die "manifest not found. Run: $0 new $DRAFT"
+    has_cases_defined || die "No cases defined in manifest. Edit it first."
 
-    jsonnet --ext-code "manifest=$(cat "$EXPERIMENTS_DIR/$DRAFT/manifest.json")" \
+    jsonnet --ext-code "manifest=$(load_manifest)" \
         "$DIRSCHEMA_DIR/experiment-cases.jsonnet" \
         | "$DIRSCHEMA_BIN" hydrate --root "$EXPERIMENTS_DIR/$DRAFT" -
 
@@ -107,9 +138,9 @@ cmd_hydrate() {
 }
 
 cmd_validate() {
-    has_manifest || die "manifest.json not found."
+    has_manifest || die "manifest not found."
 
-    jsonnet --ext-code "manifest=$(cat "$EXPERIMENTS_DIR/$DRAFT/manifest.json")" \
+    jsonnet --ext-code "manifest=$(load_manifest)" \
         "$DIRSCHEMA_DIR/experiment-cases.jsonnet" \
         | "$DIRSCHEMA_BIN" validate --root "$EXPERIMENTS_DIR/$DRAFT" -
 
@@ -123,7 +154,7 @@ cmd_status() {
     # Determine current step
     if ! has_dir; then
         echo "  [ ] new       - create experiment"
-        echo "  [ ] edit      - add cases to manifest.json"
+        echo "  [ ] edit      - add cases to manifest"
         echo "  [ ] hydrate   - create case directories"
         echo "  [ ] content   - add schema.json / instance.json"
         echo "  [ ] validate  - check structure"
@@ -134,7 +165,7 @@ cmd_status() {
 
     if ! has_manifest; then
         echo "  [~] new       - directory exists, manifest missing"
-        echo "  [ ] edit      - add cases to manifest.json"
+        echo "  [ ] edit      - add cases to manifest"
         echo "  [ ] hydrate   - create case directories"
         echo "  [ ] content   - add schema.json / instance.json"
         echo "  [ ] validate  - check structure"
@@ -143,35 +174,42 @@ cmd_status() {
         return
     fi
 
-    echo "  [x] new       - manifest.json exists"
+    local mpath
+    mpath=$(manifest_path)
+    local mname
+    mname=$(basename "$mpath")
+
+    echo "  [x] new       - $mname exists"
 
     # Check manifest schema validity
     if ! manifest_schema_valid; then
-        echo "  [!] schema    - manifest.json is INVALID"
+        echo "  [!] schema    - $mname is INVALID"
         echo ""
         echo "Schema errors:"
         manifest_schema_errors | sed 's/^/    /'
         echo ""
-        echo "Next: fix manifest.json errors"
+        echo "Next: fix $mname errors"
         return
     fi
 
-    echo "  [x] schema    - manifest.json is valid"
+    echo "  [x] schema    - $mname is valid"
 
     if ! has_cases_defined; then
-        echo "  [ ] edit      - add cases to manifest.json (currently empty)"
+        echo "  [ ] edit      - add cases to $mname (currently empty)"
         echo "  [ ] hydrate   - create case directories"
         echo "  [ ] content   - add schema.json / instance.json"
         echo "  [ ] validate  - check structure"
         echo ""
-        echo "Next: edit $EXPERIMENTS_DIR/$DRAFT/manifest.json"
+        echo "Next: edit $mpath"
         return
     fi
 
-    local case_count=$(jq '.cases | keys | length' "$EXPERIMENTS_DIR/$DRAFT/manifest.json")
+    local case_count
+    case_count=$(load_manifest | jq '.cases | keys | length')
     echo "  [x] edit      - $case_count cases defined"
 
-    local missing_dirs=$(missing_case_dirs)
+    local missing_dirs
+    missing_dirs=$(missing_case_dirs)
     if [[ -n "$missing_dirs" ]]; then
         echo "  [ ] hydrate   - missing dirs: $missing_dirs"
         echo "  [ ] content   - add schema.json / instance.json"
@@ -183,8 +221,10 @@ cmd_status() {
 
     echo "  [x] hydrate   - case directories exist"
 
-    local missing_s=$(missing_schemas)
-    local missing_i=$(missing_instances)
+    local missing_s
+    local missing_i
+    missing_s=$(missing_schemas)
+    missing_i=$(missing_instances)
     if [[ -n "$missing_s" || -n "$missing_i" ]]; then
         [[ -n "$missing_s" ]] && echo "  [ ] content   - missing schema.json: $missing_s"
         [[ -n "$missing_i" ]] && echo "  [ ] content   - missing instance.json: $missing_i"

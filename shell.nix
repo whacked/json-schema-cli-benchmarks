@@ -13,13 +13,18 @@ let
 
 in pkgs.mkShell {
   buildInputs = [
+    pkgs.babashka
     pkgs.check-jsonschema
+    pkgs.hyperfine
     pkgs.jsonnet
     pkgs.nodejs
+    pkgs.yq-go
     pkgs.python3Packages.datamodel-code-generator
     pkgs.python3Packages.loguru
-    pkgs.python3Packages.pydantic
     pkgs.python3Packages.orjson
+    pkgs.python3Packages.pyaml
+    pkgs.python3Packages.pydantic
+    pkgs.python3Packages.pyyaml
     pkgs.python3Packages.rich
     pkgs.python3Packages.typer
     dirschema
@@ -30,7 +35,6 @@ in pkgs.mkShell {
 
   shellHook = nix_shortcuts.shellHook + ''
   '' + ''
-    export PATH=$PATH:/opt/npm/bin  # path to my node-based agents
     echo-shortcuts ${__curPos.file}
   '';  # join strings with +
 }

@@ -3,11 +3,11 @@
 ## Workflow
 
 ```bash
-# 1. Create experiment (generates manifest.json from template)
+# 1. Create experiment (generates manifest.yaml from template)
 make new-experiment DRAFT=draft-2020-12
 
-# 2. Edit manifest.json - add your cases
-$EDITOR experiments/draft-2020-12/manifest.json
+# 2. Edit manifest.yaml - add your cases
+$EDITOR experiments/draft-2020-12/manifest.yaml
 
 # 3. Check status (validates manifest against schema, shows next steps)
 make status-experiment DRAFT=draft-2020-12
@@ -29,23 +29,26 @@ make run-draft-2020-12
 | Step | What's validated | Tool |
 |------|------------------|------|
 | new | draft is valid | jsonnet assertion |
-| status | manifest.json against schema | check-jsonschema |
-| hydrate | manifest.json against schema | check-jsonschema |
+| status | manifest against schema | check-jsonschema |
+| hydrate | manifest against schema | check-jsonschema |
 | validate | directory structure matches manifest | dirschema |
 | run | manifest via Pydantic, events output typed | Python/Pydantic |
 
 ## Manifest Format
 
-```json
-{
-  "draft": "draft-2020-12",
-  "cases": {
-    "my-case": {
-      "schema_valid": true,
-      "instance_valid": true
-    }
-  }
-}
+YAML (preferred) or JSON supported. New experiments use YAML.
+
+```yaml
+# manifest.yaml
+draft: draft-2020-12
+cases:
+  my-case:
+    schema_valid: true
+    instance_valid: true
+  # Comments allowed in YAML
+  another-case:
+    schema_valid: true
+    instance_valid: false  # expects validation to fail
 ```
 
 | Field | Values | Meaning |

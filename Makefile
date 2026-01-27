@@ -142,7 +142,7 @@ clean-%:
 	rm -rf $(RESULTS_DIR)/$*
 
 # -----------------------------------------------------------------------------
-# Experiment scaffolding (delegates to experiment-manager.sh)
+# Experiment scaffolding (delegates to experiment-manager.bb.clj)
 # -----------------------------------------------------------------------------
 
 _check-draft:
@@ -150,26 +150,37 @@ ifndef DRAFT
 	$(error DRAFT required. Example: make $(MAKECMDGOALS) DRAFT=draft-07)
 endif
 
-## new-experiment DRAFT=...   Create manifest.json from template
+## new-experiment DRAFT=...   Create manifest.yaml from template
 new-experiment: _check-draft
-	@$(TOOLS_DIR)/experiment-manager.sh new $(DRAFT)
+	@$(TOOLS_DIR)/experiment-manager.bb.clj new $(DRAFT)
 
 ## validate-manifest DRAFT=...  Validate manifest against schema
 validate-manifest: _check-draft
-	@check-jsonschema --schemafile schemas/manifest.schema.json \
-		$(EXPERIMENTS_DIR)/$(DRAFT)/manifest.json
+	@if [ -f "$(EXPERIMENTS_DIR)/$(DRAFT)/manifest.yaml" ]; then \
+		check-jsonschema --schemafile schemas/manifest.schema.json \
+			$(EXPERIMENTS_DIR)/$(DRAFT)/manifest.yaml; \
+	elif [ -f "$(EXPERIMENTS_DIR)/$(DRAFT)/manifest.json" ]; then \
+		check-jsonschema --schemafile schemas/manifest.schema.json \
+			$(EXPERIMENTS_DIR)/$(DRAFT)/manifest.json; \
+	else \
+		echo "ERROR: No manifest found for $(DRAFT)"; exit 1; \
+	fi
 
 ## hydrate-experiment DRAFT=...  Create case directories from manifest
 hydrate-experiment: _check-draft validate-manifest
-	@$(TOOLS_DIR)/experiment-manager.sh hydrate $(DRAFT)
+	@$(TOOLS_DIR)/experiment-manager.bb.clj hydrate $(DRAFT)
 
 ## validate-experiment DRAFT=...  Validate directory structure
 validate-experiment: _check-draft validate-manifest
-	@$(TOOLS_DIR)/experiment-manager.sh validate $(DRAFT)
+	@$(TOOLS_DIR)/experiment-manager.bb.clj validate $(DRAFT)
 
 ## status-experiment DRAFT=...  Show progress + validation status
 status-experiment: _check-draft
-	@$(TOOLS_DIR)/experiment-manager.sh status $(DRAFT)
+	@$(TOOLS_DIR)/experiment-manager.bb.clj status $(DRAFT)
+
+## debug-experiment DRAFT=...  Dump experiment state as JSON
+debug-experiment: _check-draft
+	@$(TOOLS_DIR)/experiment-manager.bb.clj debug $(DRAFT)
 
 # -----------------------------------------------------------------------------
 # Code generation (jsonnet -> JSON Schema -> Pydantic)
