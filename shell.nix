@@ -61,6 +61,7 @@ in pkgs.mkShell {
       ps.pydantic
       ps.pyyaml
       ps.rich
+      ps.tqdm
       ps.typer
     ]))
   ];  # join lists with ++

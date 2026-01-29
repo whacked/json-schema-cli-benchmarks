@@ -8,6 +8,10 @@
       "description": "CPU architecture (x86_64, arm64)",
       "type": "string"
     },
+    "command": {
+      "description": "Full command line used to invoke this benchmark run",
+      "type": "string"
+    },
     "cpu_cores": {
       "description": "Number of CPU cores (if available)",
       "minimum": 1,
@@ -73,7 +77,8 @@
     "platform_version",
     "architecture",
     "python_version",
-    "run_id"
+    "run_id",
+    "command"
   ],
   "title": "System Information",
   "type": "object"

@@ -18,9 +18,11 @@ import hashlib
 import json
 import os
 import platform
+import shlex
 import subprocess
 import sys
 from datetime import datetime, timezone
+from functools import partial
 from pathlib import Path
 from typing import Iterator, Literal
 
@@ -29,6 +31,8 @@ import typer
 import yaml
 from loguru import logger
 from pydantic import ValidationError
+from tqdm import tqdm
+from tqdm.contrib.concurrent import thread_map
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -152,7 +156,7 @@ def get_git_info(repo_root: Path) -> tuple[str | None, bool | None]:
     return git_sha, git_dirty
 
 
-def gather_system_info(repo_root: Path) -> SystemInformation:
+def gather_system_info(repo_root: Path, command: str) -> SystemInformation:
     """Gather system information for benchmark reproducibility."""
     cpu_model, cpu_cores = get_cpu_info()
     ram_bytes = get_ram_bytes()
@@ -170,6 +174,7 @@ def gather_system_info(repo_root: Path) -> SystemInformation:
         run_id=datetime.now(timezone.utc),
         git_sha=git_sha,
         git_dirty=git_dirty,
+        command=command,
     )
 
 
@@ -598,6 +603,32 @@ def write_event(events_file: Path, event: CorrectnessResult | BenchmarkResult) -
         f.write(orjson.dumps(data).decode() + "\n")
 
 
+def run_single_job(
+    job: Job,
+    adapter: Path,
+    jobs_dir: Path,
+    skip_speed: bool,
+    warmup: int,
+    runs: int,
+) -> tuple[CorrectnessResult, BenchmarkResult | None]:
+    """Execute a single job (correctness + optional benchmark).
+
+    This function is the unit of work for parallel execution. It stays
+    sequential internally, so ipdb works when parallelism=1.
+
+    Returns:
+        Tuple of (correctness_result, benchmark_result or None)
+    """
+    # Correctness check
+    correctness = run_correctness(job, adapter, jobs_dir if CAPTURE_OUTPUT else None)
+
+    benchmark = None
+    if correctness.match and not skip_speed and correctness.status == Status.ok:
+        benchmark = run_benchmark(job, adapter, jobs_dir, warmup, runs)
+
+    return (correctness, benchmark)
+
+
 @app.command()
 def main(
     draft: str = typer.Argument(..., help="Draft to benchmark (e.g., draft-07)"),
@@ -605,6 +636,11 @@ def main(
     tool_filter: str | None = typer.Option(None, "--tool", help="Only run this tool"),
     warmup: int = typer.Option(3, "--warmup", help="Hyperfine warmup runs"),
     runs: int = typer.Option(10, "--runs", help="Hyperfine benchmark runs"),
+    parallelism: int = typer.Option(
+        max((os.cpu_count() or 1) - 2, 1),
+        "--parallelism", "-j",
+        help="Number of parallel workers (default: cpu_count - 2)",
+    ),
 ) -> None:
     """Run benchmarks for a draft."""
     repo_root = Path(__file__).parent.parent
@@ -636,24 +672,30 @@ def main(
         logger.error(str(e))
         raise typer.Exit(1)
 
-    # Prepare output directories
-    results_dir.mkdir(parents=True, exist_ok=True)
-    runs_dir = results_dir / "runs"
-    runs_dir.mkdir(exist_ok=True)
-    events_file = results_dir / "events.jsonl"
+    # Gather system info (run_id is the timestamp)
+    command = shlex.join(sys.argv)
+    system_info = gather_system_info(repo_root, command)
+    run_id = system_info.run_id.strftime("%Y-%m-%dT%H-%M-%S")
 
-    # Truncate events file
+    # Prepare output directories: results/<draft>/<run_id>/{system.json, events.jsonl, jobs/}
+    run_dir = results_dir / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    jobs_dir = run_dir / "jobs"
+    jobs_dir.mkdir(exist_ok=True)
+    events_file = run_dir / "events.jsonl"
+
+    # Initialize events file
     events_file.write_text("")
 
     # Write system information
-    system_info = gather_system_info(repo_root)
-    system_file = results_dir / "system.json"
+    system_file = run_dir / "system.json"
     with open(system_file, "w") as f:
         # Use model_dump with mode='json' for proper datetime serialization
         data = system_info.model_dump(mode="json")
         json.dump(data, f, indent=2)
         f.write("\n")
     logger.info(f"System info: {system_info.platform} {system_info.architecture}, {system_info.cpu_cores} cores")
+    logger.info(f"Run ID: {run_id}, parallelism: {parallelism}")
 
     # Stats
     total_jobs = 0
@@ -676,69 +718,58 @@ def main(
     total_instances = sum(ic for _, _, _, ic in case_list)
     logger.info(f"Total: {total_cases} cases, {total_instances} instances")
 
-    # Run benchmarks
+    # Collect all jobs upfront (for all tools × cases)
+    all_jobs: list[tuple[Job, Path]] = []  # (job, adapter)
     for adapter in adapters:
         tool_name = adapter.stem
         tool_version = get_tool_version(adapter)
-        logger.info(f"\n{'='*60}")
         logger.info(f"Tool: {tool_name} ({tool_version})")
-        logger.info(f"{'='*60}")
 
-        for case_idx, (case_id, case_spec, case_dir, instance_count) in enumerate(case_list, 1):
-            # Case header with progress
-            logger.info(f"\n[Case {case_idx}/{total_cases}] {case_id}")
-            if instance_count > 0:
-                logger.info(f"  Instances: {instance_count} × 2 modes = {instance_count * 2} jobs")
-
-            instance_idx = 0
-            draft = manifest.draft.value
-
+        draft_val = manifest.draft.value
+        for case_id, case_spec, case_dir, _ in case_list:
             for job in enumerate_jobs_for_case(
-                draft, case_id, case_spec, case_dir, tool_name, tool_version
+                draft_val, case_id, case_spec, case_dir, tool_name, tool_version
             ):
-                total_jobs += 1
+                all_jobs.append((job, adapter))
 
-                # Track instance progress
-                if job.operation == "instance" and job.mode == "file":
-                    instance_idx += 1
+    total_jobs = len(all_jobs)
+    logger.info(f"Collected {total_jobs} jobs to run")
 
-                # Correctness check
-                result = run_correctness(job, adapter, runs_dir if CAPTURE_OUTPUT else None)
-                write_event(events_file, result)
+    # Create worker function with fixed arguments
+    def worker(job_adapter: tuple[Job, Path]) -> tuple[CorrectnessResult, BenchmarkResult | None]:
+        job, adapter = job_adapter
+        return run_single_job(job, adapter, jobs_dir, skip_speed, warmup, runs)
 
-                # Build progress indicator
-                if job.operation == "schema":
-                    progress = "schema"
-                else:
-                    progress = f"inst {instance_idx}/{instance_count} ({job.mode})"
+    # Run jobs (parallel or sequential based on parallelism)
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Running jobs...")
+    logger.info(f"{'='*60}")
 
-                status_icon = "✓" if result.match else "✗"
-                logger.info(
-                    f"  {status_icon} [{progress}] {result.outcome.value} "
-                    f"(expected={result.expected}, match={result.match})"
-                )
+    if parallelism == 1:
+        # Sequential: list comprehension with tqdm (debuggable with ipdb)
+        results = [worker(ja) for ja in tqdm(all_jobs, desc="Jobs")]
+    else:
+        # Parallel: thread_map handles pool + progress bar
+        results = thread_map(worker, all_jobs, max_workers=parallelism, desc="Jobs")
 
-                if result.match:
-                    matched += 1
+    # Write results sequentially (main thread)
+    for (job, _), (correctness, benchmark) in zip(all_jobs, results):
+        write_event(events_file, correctness)
 
-                    # Speed benchmark (only if correctness passed)
-                    if not skip_speed and result.status == Status.ok:
-                        bench_result = run_benchmark(job, adapter, runs_dir, warmup, runs)
-                        if bench_result:
-                            write_event(events_file, bench_result)
-                            benchmarked += 1
-                            logger.info(
-                                f"      ⏱ {bench_result.mean_s:.4f}s ± {bench_result.stddev_s:.4f}s"
-                            )
-                else:
-                    mismatched += 1
+        if correctness.match:
+            matched += 1
+            if benchmark:
+                write_event(events_file, benchmark)
+                benchmarked += 1
+        else:
+            mismatched += 1
 
     # Summary
     logger.info("")
     logger.info(f"{'='*60}")
     logger.info(f"COMPLETE: {draft}")
     logger.info(f"{'='*60}")
-    logger.info(f"Results written to: {events_file}")
+    logger.info(f"Results written to: {run_dir}")
     logger.info(f"Cases: {total_cases}, Instances: {total_instances}")
     logger.info(f"Jobs: {total_jobs} total, {matched} matched, {mismatched} mismatched")
     if not skip_speed:

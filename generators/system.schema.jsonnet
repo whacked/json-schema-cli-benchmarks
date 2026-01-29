@@ -51,6 +51,10 @@
     "git_dirty": {
       "type": ["boolean", "null"],
       "description": "Whether the git working tree has uncommitted changes"
+    },
+    "command": {
+      "type": "string",
+      "description": "Full command line used to invoke this benchmark run"
     }
   },
   "required": [
@@ -59,7 +63,8 @@
     "platform_version",
     "architecture",
     "python_version",
-    "run_id"
+    "run_id",
+    "command"
   ],
   "additionalProperties": false
 }
