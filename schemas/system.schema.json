@@ -1,0 +1,80 @@
+{
+  "$id": "https://github.com/whacked/json-schema-cli-benchmark/schemas/system.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "System and environment information captured at benchmark run start",
+  "properties": {
+    "architecture": {
+      "description": "CPU architecture (x86_64, arm64)",
+      "type": "string"
+    },
+    "cpu_cores": {
+      "description": "Number of CPU cores (if available)",
+      "minimum": 1,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "cpu_model": {
+      "description": "CPU model name (if available)",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "git_dirty": {
+      "description": "Whether the git working tree has uncommitted changes",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "git_sha": {
+      "description": "Git commit SHA of the benchmark repo (if available)",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hostname": {
+      "description": "Machine hostname",
+      "type": "string"
+    },
+    "platform": {
+      "description": "OS platform (darwin, linux, win32)",
+      "type": "string"
+    },
+    "platform_version": {
+      "description": "OS version string",
+      "type": "string"
+    },
+    "python_version": {
+      "description": "Python version string",
+      "type": "string"
+    },
+    "ram_bytes": {
+      "description": "Total RAM in bytes (if available)",
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "run_id": {
+      "description": "ISO-8601 timestamp marking the start of this benchmark run",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "hostname",
+    "platform",
+    "platform_version",
+    "architecture",
+    "python_version",
+    "run_id"
+  ],
+  "title": "System Information",
+  "type": "object"
+}

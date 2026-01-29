@@ -17,6 +17,7 @@ import glob
 import hashlib
 import json
 import os
+import platform
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -41,6 +42,7 @@ from models.events import (
     Operation,
     Status,
 )
+from models.system import SystemInformation
 
 app = typer.Typer()
 
@@ -59,6 +61,116 @@ EXIT_CODE_OUTCOME = {
 # alongside hyperfine.json (if speed benchmarks are enabled).
 # Useful for debugging mismatches or analyzing error messages across tools.
 CAPTURE_OUTPUT = False
+
+
+# -----------------------------------------------------------------------------
+# System information gathering
+# -----------------------------------------------------------------------------
+
+
+def get_cpu_info() -> tuple[str | None, int | None]:
+    """Get CPU model and core count (platform-specific)."""
+    cpu_model = None
+    cpu_cores = os.cpu_count()
+
+    try:
+        if sys.platform == "darwin":
+            # macOS: use sysctl
+            result = subprocess.run(
+                ["sysctl", "-n", "machdep.cpu.brand_string"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if result.returncode == 0:
+                cpu_model = result.stdout.strip()
+        elif sys.platform == "linux":
+            # Linux: parse /proc/cpuinfo
+            with open("/proc/cpuinfo") as f:
+                for line in f:
+                    if line.startswith("model name"):
+                        cpu_model = line.split(":")[1].strip()
+                        break
+    except Exception:
+        pass
+
+    return cpu_model, cpu_cores
+
+
+def get_ram_bytes() -> int | None:
+    """Get total RAM in bytes (platform-specific)."""
+    try:
+        if sys.platform == "darwin":
+            result = subprocess.run(
+                ["sysctl", "-n", "hw.memsize"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if result.returncode == 0:
+                return int(result.stdout.strip())
+        elif sys.platform == "linux":
+            with open("/proc/meminfo") as f:
+                for line in f:
+                    if line.startswith("MemTotal:"):
+                        # Value is in kB
+                        kb = int(line.split()[1])
+                        return kb * 1024
+    except Exception:
+        pass
+    return None
+
+
+def get_git_info(repo_root: Path) -> tuple[str | None, bool | None]:
+    """Get git SHA and dirty status."""
+    git_sha = None
+    git_dirty = None
+
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=repo_root,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_sha = result.stdout.strip()[:12]  # Short SHA
+
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            cwd=repo_root,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_dirty = len(result.stdout.strip()) > 0
+    except Exception:
+        pass
+
+    return git_sha, git_dirty
+
+
+def gather_system_info(repo_root: Path) -> SystemInformation:
+    """Gather system information for benchmark reproducibility."""
+    cpu_model, cpu_cores = get_cpu_info()
+    ram_bytes = get_ram_bytes()
+    git_sha, git_dirty = get_git_info(repo_root)
+
+    return SystemInformation(
+        hostname=platform.node(),
+        platform=sys.platform,
+        platform_version=platform.platform(),
+        architecture=platform.machine(),
+        cpu_model=cpu_model,
+        cpu_cores=cpu_cores,
+        ram_bytes=ram_bytes,
+        python_version=platform.python_version(),
+        run_id=datetime.now(timezone.utc),
+        git_sha=git_sha,
+        git_dirty=git_dirty,
+    )
 
 
 def compute_job_id(
@@ -532,6 +644,16 @@ def main(
 
     # Truncate events file
     events_file.write_text("")
+
+    # Write system information
+    system_info = gather_system_info(repo_root)
+    system_file = results_dir / "system.json"
+    with open(system_file, "w") as f:
+        # Use model_dump with mode='json' for proper datetime serialization
+        data = system_info.model_dump(mode="json")
+        json.dump(data, f, indent=2)
+        f.write("\n")
+    logger.info(f"System info: {system_info.platform} {system_info.architecture}, {system_info.cpu_cores} cores")
 
     # Stats
     total_jobs = 0

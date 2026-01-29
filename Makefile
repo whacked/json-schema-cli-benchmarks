@@ -235,6 +235,9 @@ debug-experiment: _check-draft
 ./schemas/events.schema.json: ./generators/events.schema.jsonnet
 	jsonnet $< | jq -S > $@
 
+./schemas/system.schema.json: ./generators/system.schema.jsonnet
+	jsonnet $< | jq -S > $@
+
 ./src/models/manifest.py: ./schemas/manifest.schema.json
 	@mkdir -p src/models
 	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
@@ -243,8 +246,12 @@ debug-experiment: _check-draft
 	@mkdir -p src/models
 	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
 
+./src/models/system.py: ./schemas/system.schema.json
+	@mkdir -p src/models
+	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
+
 ## schemas                    Generate JSON Schemas from jsonnet
-schemas: ./schemas/manifest.schema.json ./schemas/events.schema.json
+schemas: ./schemas/manifest.schema.json ./schemas/events.schema.json ./schemas/system.schema.json
 
 ## models                     Generate Pydantic models from schemas
-models: ./src/models/manifest.py ./src/models/events.py
+models: ./src/models/manifest.py ./src/models/events.py ./src/models/system.py
