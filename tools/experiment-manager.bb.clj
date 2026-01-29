@@ -115,8 +115,14 @@
                            (mapv name))
      :missing-instances (->> cases
                              (filter (fn [[_ spec]] (some? (:instance_valid spec))))
+                             (filter (fn [[case-id spec]]
+                                       (let [case-dir (fs/path exp-dir "cases" (name case-id))]
+                                         (if-let [glob-pattern (:instances spec)]
+                                           ;; Has instances glob - check if any files match
+                                           (empty? (fs/glob case-dir glob-pattern))
+                                           ;; No glob - check for instance.json
+                                           (not (fs/exists? (fs/path case-dir "instance.json")))))))
                              (map first)
-                             (filter #(not (fs/exists? (fs/path exp-dir "cases" (name %) "instance.json"))))
                              (mapv name))}))
 
 (defn add-schema-validation

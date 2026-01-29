@@ -9,8 +9,8 @@ RESULTS_DIR := $(REPO_ROOT)/results
 BENCH_DIR := $(REPO_ROOT)/bench
 TOOLS_DIR := $(REPO_ROOT)/tools
 
-# Discover drafts with manifest.json
-DRAFTS := $(shell find $(EXPERIMENTS_DIR) -mindepth 2 -maxdepth 2 -name 'manifest.json' -exec dirname {} \; 2>/dev/null | xargs -I{} basename {} | sort)
+# Discover drafts with manifest.json or manifest.yaml
+DRAFTS := $(shell find $(EXPERIMENTS_DIR) -mindepth 2 -maxdepth 2 \( -name 'manifest.json' -o -name 'manifest.yaml' \) -exec dirname {} \; 2>/dev/null | xargs -I{} basename {} | sort -u)
 
 CORRECTNESS_FILES := $(foreach d,$(DRAFTS),$(RESULTS_DIR)/$(d)/correctness.jsonl)
 SPEED_FILES := $(foreach d,$(DRAFTS),$(RESULTS_DIR)/$(d)/speed.jsonl)
@@ -35,6 +35,9 @@ help:
 	@echo ""
 	@echo "Status:"
 	@grep -B1 -E '^(info|list-)' $(MAKEFILE_LIST) | grep '^##' | sed 's/^## /  make /'
+	@echo ""
+	@echo "Corpora:"
+	@grep -B1 -E '^gen-cor' $(MAKEFILE_LIST) | grep '^##' | sed 's/^## /  make /'
 	@echo ""
 	@echo "Cleanup:"
 	@grep -B1 -E '^clean' $(MAKEFILE_LIST) | grep '^##' | sed 's/^## /  make /'
@@ -83,17 +86,19 @@ list-cases: _check-draft
 
 EVENTS_FILES := $(foreach d,$(DRAFTS),$(RESULTS_DIR)/$(d)/events.jsonl)
 
-.PHONY: run run-correctness $(foreach d,$(DRAFTS),run-$(d) run-correctness-$(d))
+.PHONY: run run-correctness
 
 ## run                        Run all drafts (correctness + speed)
 run: $(EVENTS_FILES)
 
-$(RESULTS_DIR)/%/events.jsonl: $(EXPERIMENTS_DIR)/%/manifest.json
+# Note: No explicit manifest dependency - runner validates manifest exists (json or yaml)
+$(RESULTS_DIR)/%/events.jsonl:
 	python3 $(BENCH_DIR)/run.py $*
 
 ## run-<draft>                Run one draft (correctness + speed)
-run-%: $(RESULTS_DIR)/%/events.jsonl
-	@true
+.PHONY: run-%
+run-%:
+	python3 $(BENCH_DIR)/run.py $*
 
 ## run-correctness            Run correctness only for all drafts
 run-correctness:
@@ -140,6 +145,38 @@ clean:
 ## clean-<draft>              Remove results for one draft
 clean-%:
 	rm -rf $(RESULTS_DIR)/$*
+
+# -----------------------------------------------------------------------------
+# Corpus generation (multi-draft support)
+# -----------------------------------------------------------------------------
+
+# Note: jsf requires venv with PYTHONPATH unset (conflicts with nix python)
+VENV_PYTHON := unset PYTHONPATH && source .venv/bin/activate && python
+
+## gen-corpus DRAFT=...        Generate benchmark corpus for a draft via jsf
+gen-corpus: _check-draft
+	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft $(DRAFT) --seed 0
+
+## gen-corpus-small DRAFT=...  Generate small corpus (S tier only, fewer instances)
+gen-corpus-small: _check-draft
+	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft $(DRAFT) --seed 0 --tiers S --n-valid 5 --m-invalid 3
+
+## clean-corpus DRAFT=...      Remove generated corpus for a draft
+clean-corpus: _check-draft
+	rm -rf $(EXPERIMENTS_DIR)/$(DRAFT)/cases $(EXPERIMENTS_DIR)/$(DRAFT)/manifest.json $(EXPERIMENTS_DIR)/$(DRAFT)/manifest.yaml
+
+# Convenience targets for common drafts
+## gen-corpus-draft-04         Generate draft-04 benchmark corpus via jsf
+gen-corpus-draft-04:
+	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft draft-04 --seed 0
+
+## gen-corpus-draft-07         Generate draft-07 benchmark corpus via jsf
+gen-corpus-draft-07:
+	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft draft-07 --seed 0
+
+## gen-corpus-2020-12          Generate 2020-12 benchmark corpus via jsf
+gen-corpus-2020-12:
+	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft 2020-12 --seed 0
 
 # -----------------------------------------------------------------------------
 # Experiment scaffolding (delegates to experiment-manager.bb.clj)

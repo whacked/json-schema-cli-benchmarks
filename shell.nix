@@ -11,23 +11,58 @@ let
   # local:
   # dirschema = (builtins.getFlake "/path/to/dirschema").packages.${pkgs.system}.default;
 
+  python = pkgs.python3;
+
+  jsf = python.pkgs.buildPythonPackage rec {
+    pname = "jsf";
+    version = "0.11.2";
+    build-system = [ python.pkgs.setuptools ];
+    pyproject = true;
+
+    src = python.pkgs.fetchPypi {
+      inherit pname version;
+      sha256 = "07055b363281d38ce871a9256a00587d8472802c5108721a7fe5884465104b5d";
+    };
+
+    nativeBuildInputs = with python.pkgs; [
+      setuptools
+      wheel
+    ];
+
+    propagatedBuildInputs = with python.pkgs; [
+      faker
+      jsonschema
+      pydantic
+      rstr
+      smart-open
+      requests
+    ];
+
+    doCheck = false;
+
+    pythonImportsCheck = [ "jsf" ];
+  };
+
 in pkgs.mkShell {
   buildInputs = [
+    dirschema
     pkgs.babashka
     pkgs.check-jsonschema
     pkgs.hyperfine
     pkgs.jsonnet
     pkgs.nodejs
     pkgs.yq-go
-    pkgs.python3Packages.datamodel-code-generator
-    pkgs.python3Packages.loguru
-    pkgs.python3Packages.orjson
-    pkgs.python3Packages.pyaml
-    pkgs.python3Packages.pydantic
-    pkgs.python3Packages.pyyaml
-    pkgs.python3Packages.rich
-    pkgs.python3Packages.typer
-    dirschema
+    (python.withPackages (ps: [
+      jsf
+      ps.datamodel-code-generator
+      ps.loguru
+      ps.orjson
+      ps.pyaml
+      ps.pydantic
+      ps.pyyaml
+      ps.rich
+      ps.typer
+    ]))
   ];  # join lists with ++
 
   nativeBuildInputs = [

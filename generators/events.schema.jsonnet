@@ -61,9 +61,19 @@
           "type": "string",
           "enum": ["ok", "unsupported", "error"],
           "description": "Execution status"
+        },
+        "schema_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of schema file in bytes"
+        },
+        "instance_bytes": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Size of instance file in bytes (null for schema-only operations)"
         }
       },
-      "required": ["event", "ts", "draft", "tool", "tool_version", "case_id", "operation", "mode", "job_id", "status"]
+      "required": ["event", "ts", "draft", "tool", "tool_version", "case_id", "operation", "mode", "job_id", "status", "schema_bytes"]
     },
 
     "CorrectnessResult": {

@@ -16,6 +16,7 @@ from __future__ import annotations
 import glob
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -49,6 +50,15 @@ EXIT_CODE_OUTCOME = {
     1: Outcome.INVALID,
     2: Outcome.UNSUPPORTED,
 }
+
+# -----------------------------------------------------------------------------
+# Output capture configuration
+# -----------------------------------------------------------------------------
+# Set to True to capture stdout/stderr from correctness runs.
+# When enabled, writes to results/<draft>/runs/<job_id>/stdout.txt and stderr.txt
+# alongside hyperfine.json (if speed benchmarks are enabled).
+# Useful for debugging mismatches or analyzing error messages across tools.
+CAPTURE_OUTPUT = False
 
 
 def compute_job_id(
@@ -199,6 +209,87 @@ class Job:
             draft, tool, case_id, operation, mode, input_id
         )
 
+    @property
+    def schema_bytes(self) -> int:
+        """Size of schema file in bytes."""
+        return self.schema_path.stat().st_size
+
+    @property
+    def instance_bytes(self) -> int | None:
+        """Size of instance file in bytes, or None for schema-only operations."""
+        if self.instance_path is None:
+            return None
+        return self.instance_path.stat().st_size
+
+
+def enumerate_jobs_for_case(
+    draft: str,
+    case_id: str,
+    case_spec: CaseSpec,
+    case_dir: Path,
+    tool: str,
+    tool_version: str,
+) -> Iterator[Job]:
+    """Generate all jobs for a single case."""
+    schema_path = case_dir / "schema.json"
+
+    # Schema validation always runs (file mode only)
+    yield Job(
+        draft=draft,
+        tool=tool,
+        tool_version=tool_version,
+        case_id=case_id,
+        operation="schema",
+        mode="file",
+        schema_path=schema_path,
+        expected=case_spec.schema_valid,
+    )
+
+    # Instance validation only runs if schema is valid
+    if case_spec.schema_valid and case_spec.instance_valid is not None:
+        instances = expand_instances(case_dir, case_spec)
+        for instance_path in instances:
+            # Compute input_id as relative path from case instances dir
+            if case_spec.instances:
+                input_id = str(instance_path.relative_to(case_dir / "instances"))
+            else:
+                input_id = instance_path.name
+
+            # File mode
+            yield Job(
+                draft=draft,
+                tool=tool,
+                tool_version=tool_version,
+                case_id=case_id,
+                operation="instance",
+                mode="file",
+                schema_path=schema_path,
+                instance_path=instance_path,
+                expected=case_spec.instance_valid,
+                input_id=input_id,
+            )
+
+            # Stdin mode
+            yield Job(
+                draft=draft,
+                tool=tool,
+                tool_version=tool_version,
+                case_id=case_id,
+                operation="instance",
+                mode="stdin",
+                schema_path=schema_path,
+                instance_path=instance_path,
+                expected=case_spec.instance_valid,
+                input_id=input_id,
+            )
+
+
+def count_instances_for_case(case_dir: Path, case_spec: CaseSpec) -> int:
+    """Count instances for a case (for progress display)."""
+    if not case_spec.schema_valid or case_spec.instance_valid is None:
+        return 0
+    return len(expand_instances(case_dir, case_spec))
+
 
 def enumerate_jobs(
     manifest: ExperimentManifest,
@@ -206,7 +297,7 @@ def enumerate_jobs(
     tool: str,
     tool_version: str,
 ) -> Iterator[Job]:
-    """Generate all jobs for a tool × manifest."""
+    """Generate all jobs for a tool × manifest (flat iterator for compatibility)."""
     draft = manifest.draft.value
     cases_dir = experiment_dir / "cases"
 
@@ -218,59 +309,24 @@ def enumerate_jobs(
             logger.warning(f"Skipping {case_id}: no schema.json")
             continue
 
-        # Schema validation always runs (file mode only)
-        yield Job(
-            draft=draft,
-            tool=tool,
-            tool_version=tool_version,
-            case_id=case_id,
-            operation="schema",
-            mode="file",
-            schema_path=schema_path,
-            expected=case_spec.schema_valid,
+        yield from enumerate_jobs_for_case(
+            draft, case_id, case_spec, case_dir, tool, tool_version
         )
 
-        # Instance validation only runs if schema is valid
-        if case_spec.schema_valid and case_spec.instance_valid is not None:
-            instances = expand_instances(case_dir, case_spec)
-            for instance_path in instances:
-                # Compute input_id as relative path from case instances dir
-                if case_spec.instances:
-                    input_id = str(instance_path.relative_to(case_dir / "instances"))
-                else:
-                    input_id = instance_path.name
 
-                # File mode
-                yield Job(
-                    draft=draft,
-                    tool=tool,
-                    tool_version=tool_version,
-                    case_id=case_id,
-                    operation="instance",
-                    mode="file",
-                    schema_path=schema_path,
-                    instance_path=instance_path,
-                    expected=case_spec.instance_valid,
-                    input_id=input_id,
-                )
+def run_correctness(
+    job: Job,
+    adapter: Path,
+    runs_dir: Path | None = None,
+) -> CorrectnessResult:
+    """Execute correctness check for a job.
 
-                # Stdin mode
-                yield Job(
-                    draft=draft,
-                    tool=tool,
-                    tool_version=tool_version,
-                    case_id=case_id,
-                    operation="instance",
-                    mode="stdin",
-                    schema_path=schema_path,
-                    instance_path=instance_path,
-                    expected=case_spec.instance_valid,
-                    input_id=input_id,
-                )
-
-
-def run_correctness(job: Job, adapter: Path) -> CorrectnessResult:
-    """Execute correctness check for a job."""
+    Args:
+        job: The job to run
+        adapter: Path to the adapter script
+        runs_dir: If CAPTURE_OUTPUT is True, base directory for output files.
+                  Writes to runs_dir/<job_id>/stdout.txt and stderr.txt
+    """
     ts = datetime.now(timezone.utc)
 
     if job.operation == "schema":
@@ -297,6 +353,23 @@ def run_correctness(job: Job, adapter: Path) -> CorrectnessResult:
     match = determine_match(outcome, job.expected)
     status = determine_status(exit_code)
 
+    # Capture stdout/stderr if enabled (writes to runs/<job_id>/ alongside hyperfine.json)
+    stdout_path = None
+    stderr_path = None
+    if CAPTURE_OUTPUT and runs_dir is not None:
+        job_dir = runs_dir / job.job_id
+        job_dir.mkdir(parents=True, exist_ok=True)
+
+        if stdout:
+            stdout_file = job_dir / "stdout.txt"
+            stdout_file.write_text(stdout)
+            stdout_path = relpath(stdout_file)
+
+        if stderr:
+            stderr_file = job_dir / "stderr.txt"
+            stderr_file.write_text(stderr)
+            stderr_path = relpath(stderr_file)
+
     return CorrectnessResult(
         event="correctness_result",
         ts=ts,
@@ -309,13 +382,20 @@ def run_correctness(job: Job, adapter: Path) -> CorrectnessResult:
         job_id=job.job_id,
         input_id=job.input_id,
         status=status,
+        schema_bytes=job.schema_bytes,
+        instance_bytes=job.instance_bytes,
         exit_code=exit_code,
         outcome=outcome,
         expected=job.expected,
         match=match,
-        stdout_path=None,
-        stderr_path=None,
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
     )
+
+
+def relpath(path: Path) -> str:
+    """Convert path to relative path from cwd."""
+    return os.path.relpath(path, os.getcwd())
 
 
 def run_benchmark(
@@ -328,13 +408,17 @@ def run_benchmark(
     """Execute hyperfine benchmark for a job."""
     ts = datetime.now(timezone.utc)
 
-    # Build the command to benchmark
+    # Build the command to benchmark (use relative paths for reproducibility)
+    adapter_rel = relpath(adapter)
+    schema_rel = relpath(job.schema_path)
+    instance_rel = relpath(job.instance_path) if job.instance_path else None
+
     if job.operation == "schema":
-        cmd = f"{adapter} validate-schema {job.schema_path}"
+        cmd = f"{adapter_rel} validate-schema {schema_rel}"
     elif job.mode == "file":
-        cmd = f"{adapter} validate-instance {job.schema_path} {job.instance_path}"
+        cmd = f"{adapter_rel} validate-instance {schema_rel} {instance_rel}"
     else:
-        cmd = f"cat {job.instance_path} | {adapter} validate-instance-stdin {job.schema_path}"
+        cmd = f"cat {instance_rel} | {adapter_rel} validate-instance-stdin {schema_rel}"
 
     # Output path
     job_dir = runs_dir / job.job_id
@@ -376,12 +460,14 @@ def run_benchmark(
             job_id=job.job_id,
             input_id=job.input_id,
             status=Status.ok,
+            schema_bytes=job.schema_bytes,
+            instance_bytes=job.instance_bytes,
             mean_s=bench["mean"],
             stddev_s=bench["stddev"],
             min_s=bench["min"],
             max_s=bench["max"],
             runs=len(bench["times"]),
-            hyperfine_json_path=str(hyperfine_json),
+            hyperfine_json_path=relpath(hyperfine_json),
         )
 
     except subprocess.TimeoutExpired:
@@ -453,44 +539,86 @@ def main(
     mismatched = 0
     benchmarked = 0
 
+    # Pre-compute case list and counts for progress display
+    cases_dir = experiment_dir / "cases"
+    case_list = []
+    for case_id, case_spec in manifest.cases.items():
+        case_dir = cases_dir / case_id
+        if not (case_dir / "schema.json").exists():
+            logger.warning(f"Skipping {case_id}: no schema.json")
+            continue
+        instance_count = count_instances_for_case(case_dir, case_spec)
+        case_list.append((case_id, case_spec, case_dir, instance_count))
+
+    total_cases = len(case_list)
+    total_instances = sum(ic for _, _, _, ic in case_list)
+    logger.info(f"Total: {total_cases} cases, {total_instances} instances")
+
     # Run benchmarks
     for adapter in adapters:
         tool_name = adapter.stem
         tool_version = get_tool_version(adapter)
+        logger.info(f"\n{'='*60}")
         logger.info(f"Tool: {tool_name} ({tool_version})")
+        logger.info(f"{'='*60}")
 
-        for job in enumerate_jobs(manifest, experiment_dir, tool_name, tool_version):
-            total_jobs += 1
+        for case_idx, (case_id, case_spec, case_dir, instance_count) in enumerate(case_list, 1):
+            # Case header with progress
+            logger.info(f"\n[Case {case_idx}/{total_cases}] {case_id}")
+            if instance_count > 0:
+                logger.info(f"  Instances: {instance_count} × 2 modes = {instance_count * 2} jobs")
 
-            # Correctness check
-            result = run_correctness(job, adapter)
-            write_event(events_file, result)
+            instance_idx = 0
+            draft = manifest.draft.value
 
-            status_icon = "✓" if result.match else "✗"
-            logger.info(
-                f"  {status_icon} {job.case_id}/{job.operation}({job.mode}): "
-                f"{result.outcome.value} (expected={result.expected}, match={result.match})"
-            )
+            for job in enumerate_jobs_for_case(
+                draft, case_id, case_spec, case_dir, tool_name, tool_version
+            ):
+                total_jobs += 1
 
-            if result.match:
-                matched += 1
+                # Track instance progress
+                if job.operation == "instance" and job.mode == "file":
+                    instance_idx += 1
 
-                # Speed benchmark (only if correctness passed)
-                if not skip_speed and result.status == Status.ok:
-                    bench_result = run_benchmark(job, adapter, runs_dir, warmup, runs)
-                    if bench_result:
-                        write_event(events_file, bench_result)
-                        benchmarked += 1
-                        logger.info(
-                            f"    ⏱ {bench_result.mean_s:.4f}s ± {bench_result.stddev_s:.4f}s"
-                        )
-            else:
-                mismatched += 1
+                # Correctness check
+                result = run_correctness(job, adapter, runs_dir if CAPTURE_OUTPUT else None)
+                write_event(events_file, result)
+
+                # Build progress indicator
+                if job.operation == "schema":
+                    progress = "schema"
+                else:
+                    progress = f"inst {instance_idx}/{instance_count} ({job.mode})"
+
+                status_icon = "✓" if result.match else "✗"
+                logger.info(
+                    f"  {status_icon} [{progress}] {result.outcome.value} "
+                    f"(expected={result.expected}, match={result.match})"
+                )
+
+                if result.match:
+                    matched += 1
+
+                    # Speed benchmark (only if correctness passed)
+                    if not skip_speed and result.status == Status.ok:
+                        bench_result = run_benchmark(job, adapter, runs_dir, warmup, runs)
+                        if bench_result:
+                            write_event(events_file, bench_result)
+                            benchmarked += 1
+                            logger.info(
+                                f"      ⏱ {bench_result.mean_s:.4f}s ± {bench_result.stddev_s:.4f}s"
+                            )
+                else:
+                    mismatched += 1
 
     # Summary
     logger.info("")
+    logger.info(f"{'='*60}")
+    logger.info(f"COMPLETE: {draft}")
+    logger.info(f"{'='*60}")
     logger.info(f"Results written to: {events_file}")
-    logger.info(f"Summary: {total_jobs} jobs, {matched} matched, {mismatched} mismatched")
+    logger.info(f"Cases: {total_cases}, Instances: {total_instances}")
+    logger.info(f"Jobs: {total_jobs} total, {matched} matched, {mismatched} mismatched")
     if not skip_speed:
         logger.info(f"Benchmarked: {benchmarked} jobs")
 

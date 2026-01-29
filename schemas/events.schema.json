@@ -129,6 +129,14 @@
             "null"
           ]
         },
+        "instance_bytes": {
+          "description": "Size of instance file in bytes (null for schema-only operations)",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "job_id": {
           "description": "Stable job hash (sha256 of canonical job dimensions)",
           "type": "string"
@@ -148,6 +156,11 @@
             "instance"
           ],
           "type": "string"
+        },
+        "schema_bytes": {
+          "description": "Size of schema file in bytes",
+          "minimum": 0,
+          "type": "integer"
         },
         "status": {
           "description": "Execution status",
@@ -182,7 +195,8 @@
         "operation",
         "mode",
         "job_id",
-        "status"
+        "status",
+        "schema_bytes"
       ],
       "type": "object"
     }
