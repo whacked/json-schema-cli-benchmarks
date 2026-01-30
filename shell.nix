@@ -50,6 +50,8 @@ in pkgs.mkShell {
     pkgs.check-jsonschema
     pkgs.hyperfine
     pkgs.jsonnet
+    pkgs.jsonschema
+    pkgs.jsonschema-cli
     pkgs.nodejs
     pkgs.yq-go
     (python.withPackages (ps: [
