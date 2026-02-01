@@ -31,7 +31,7 @@ import random
 import re
 import sys
 import yaml
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Callable
 
@@ -42,37 +42,63 @@ from jsf import JSF
 # Tier knobs
 # -----------------------------------------------------------------------------
 
+@dataclass(frozen=True)
+class TierKnobs:
+    """Configuration knobs that control schema/instance size for a tier."""
+    P: int  # object width (properties)
+    D: int  # nesting depth
+    N: int  # array length
+    L: int  # string length
+    U: int  # oneOf branch count
+    E: int  # enum size
+    T: int  # tuple width
+    R: int  # ref chain length
+
+    def as_dict(self) -> dict[str, int]:
+        return asdict(self)
+
+
 TIER_KNOBS = {
-    "S": {
-        "P": 16,      # object width (properties)
-        "D": 4,       # nesting depth
-        "N": 32,      # array length
-        "L": 32,      # string length
-        "U": 4,       # oneOf branch count
-        "E": 64,      # enum size
-        "T": 8,       # tuple width
-        "R": 4,       # ref chain length
-    },
-    "M": {
-        "P": 128,
-        "D": 16,
-        "N": 1024,
-        "L": 1024,
-        "U": 16,
-        "E": 4096,
-        "T": 32,
-        "R": 16,
-    },
-    "L": {
-        "P": 256,     # Reduced from 1024 to keep schema < 100KB
-        "D": 32,      # Reduced from 64 to keep nesting reasonable
-        "N": 4096,    # Reduced from 16384 to keep instances < 1MB
-        "L": 4096,    # Reduced from 16384
-        "U": 32,      # Reduced from 64
-        "E": 8192,    # Reduced from 65536 to keep schema < 1MB
-        "T": 64,      # Reduced from 128
-        "R": 32,      # Reduced from 64
-    },
+    "S": TierKnobs(
+        P=16,
+        D=4,
+        N=32,
+        L=32,
+        U=4,
+        E=64,
+        T=8,
+        R=4,
+    ),
+    "M": TierKnobs(
+        P=128,
+        D=16,
+        N=1024,
+        L=1024,
+        U=16,
+        E=4096,
+        T=32,
+        R=16,
+    ),
+    "L": TierKnobs(
+        P=256,
+        D=32,
+        N=4096,
+        L=4096,
+        U=32,
+        E=8192,
+        T=64,
+        R=32,
+    ),
+    "2L": TierKnobs(
+        P=512,      # 2x L
+        D=48,       # 1.5x L (depth grows slower to avoid stack issues)
+        N=8192,     # 2x L
+        L=8192,     # 2x L
+        U=64,       # 2x L
+        E=16384,    # 2x L
+        T=128,      # 2x L
+        R=48,       # 1.5x L (ref chains grow slower)
+    ),
 }
 
 # Draft-specific $schema URIs
@@ -232,7 +258,7 @@ def schema_object_basic(knobs: dict, draft: str) -> dict:
         "additionalProperties": False,
         "properties": {
             "id": {"type": "integer"},
-            "name": {"type": "string", "minLength": 1, "maxLength": knobs["L"]},
+            "name": {"type": "string", "minLength": 1, "maxLength": knobs.L},
             "active": {"type": "boolean"},
         },
         "required": ["id", "name"],
@@ -241,7 +267,7 @@ def schema_object_basic(knobs: dict, draft: str) -> dict:
 
 def schema_object_deep(knobs: dict, draft: str) -> dict:
     """Nested object chain of depth D."""
-    depth = knobs["D"]
+    depth = knobs.D
 
     # Build from leaf up
     leaf = {
@@ -269,7 +295,7 @@ def schema_object_deep(knobs: dict, draft: str) -> dict:
 
 def schema_object_wide(knobs: dict, draft: str) -> dict:
     """Object with P properties."""
-    P = knobs["P"]
+    P = knobs.P
     properties = {f"k{i:04d}": {"type": "integer"} for i in range(P)}
     required = [f"k{i:04d}" for i in range(P // 4)]
 
@@ -284,7 +310,7 @@ def schema_object_wide(knobs: dict, draft: str) -> dict:
 
 def schema_array_primitives(knobs: dict, draft: str) -> dict:
     """Array of N integers."""
-    N = knobs["N"]
+    N = knobs.N
     return {
         "$schema": get_schema_uri(draft),
         "type": "array",
@@ -296,10 +322,10 @@ def schema_array_primitives(knobs: dict, draft: str) -> dict:
 
 def schema_array_objects(knobs: dict, draft: str) -> dict:
     """Array of N objects with small width."""
-    N = knobs["N"]
+    N = knobs.N
     # Scale object width with tier but keep smaller than P
     width_by_tier = {"S": 4, "M": 8, "L": 16}
-    tier = next((k for k, v in TIER_KNOBS.items() if v["N"] == N), "S")
+    tier = next((k for k, v in TIER_KNOBS.items() if v.N == N), "S")
     obj_width = width_by_tier.get(tier, 4)
 
     properties = {f"f{i}": {"type": "integer"} for i in range(obj_width)}
@@ -321,7 +347,7 @@ def schema_array_objects(knobs: dict, draft: str) -> dict:
 
 def schema_array_tuple(knobs: dict, draft: str) -> dict:
     """Tuple array with T items."""
-    T = knobs["T"]
+    T = knobs.T
     type_cycle = ["integer", "string", "boolean"]
     tuple_items = [{"type": type_cycle[i % len(type_cycle)]} for i in range(T)]
 
@@ -344,7 +370,7 @@ def schema_array_tuple(knobs: dict, draft: str) -> dict:
 
 def schema_combinators_oneOf(knobs: dict, draft: str) -> dict:
     """oneOf with U discriminated branches."""
-    U = knobs["U"]
+    U = knobs.U
     branches = []
     for i in range(U):
         branches.append({
@@ -367,7 +393,7 @@ def schema_combinators_allOf(knobs: dict, draft: str) -> dict:
     """allOf with multiple constraints."""
     # Scale number of allOf terms
     n_terms = {"S": 3, "M": 8, "L": 16}
-    tier = next(k for k, v in TIER_KNOBS.items() if v["U"] == knobs["U"])
+    tier = next(k for k, v in TIER_KNOBS.items() if v.U == knobs.U)
     count = n_terms[tier]
 
     terms = []
@@ -386,7 +412,7 @@ def schema_combinators_allOf(knobs: dict, draft: str) -> dict:
 
 def schema_ref_graph(knobs: dict, draft: str) -> dict:
     """$ref chain with shared definitions."""
-    R = knobs["R"]
+    R = knobs.R
 
     # 2019-09+ uses $defs instead of definitions
     defs_key = "$defs" if draft in ("2019-09", "2020-12") else "definitions"
@@ -438,7 +464,7 @@ def schema_dependencies(knobs: dict, draft: str) -> dict:
     """dependencies keyword (or dependentRequired in 2019-09+)."""
     # Scale number of dependency pairs
     n_deps = {"S": 2, "M": 8, "L": 32}
-    tier = next(k for k, v in TIER_KNOBS.items() if v["P"] == knobs["P"])
+    tier = next(k for k, v in TIER_KNOBS.items() if v.P == knobs.P)
     count = n_deps[tier]
 
     properties = {
@@ -471,7 +497,7 @@ def schema_dependencies(knobs: dict, draft: str) -> dict:
 def schema_patternProperties(knobs: dict, draft: str) -> dict:
     """patternProperties with multiple patterns."""
     n_patterns = {"S": 2, "M": 4, "L": 8}
-    tier = next(k for k, v in TIER_KNOBS.items() if v["P"] == knobs["P"])
+    tier = next(k for k, v in TIER_KNOBS.items() if v.P == knobs.P)
     count = n_patterns[tier]
 
     patterns = {}
@@ -488,8 +514,8 @@ def schema_patternProperties(knobs: dict, draft: str) -> dict:
 
 def schema_enum_uniqueItems(knobs: dict, draft: str) -> dict:
     """enum and uniqueItems."""
-    E = knobs["E"]
-    N = min(knobs["N"], 1000)  # Cap array size for uniqueItems
+    E = knobs.E
+    N = min(knobs.N, 1000)  # Cap array size for uniqueItems
 
     enum_values = [f"v{i:06d}" for i in range(E)]
 
@@ -1276,6 +1302,25 @@ def generate_corpus(
     print(f"  - {n_valid_cases} valid schema + valid instances")
     print(f"  - {n_invalid_cases} valid schema + invalid instances")
     print(f"  - {n_schema_invalid} invalid schema cases")
+
+    # Size summary per tier
+    print(f"\nSize summary by tier:")
+    for tier in tiers:
+        tier_cases = [c for c in cases_dir.iterdir() if c.is_dir() and f"_{tier}_" in c.name]
+        if not tier_cases:
+            continue
+        max_schema_size = 0
+        max_instance_size = 0
+        for case_dir in tier_cases:
+            schema_path = case_dir / "schema.json"
+            if schema_path.exists():
+                max_schema_size = max(max_schema_size, schema_path.stat().st_size)
+            instances_dir = case_dir / "instances"
+            if instances_dir.exists():
+                for inst in instances_dir.iterdir():
+                    max_instance_size = max(max_instance_size, inst.stat().st_size)
+        print(f"  {tier}: max schema {max_schema_size:,} bytes, max instance {max_instance_size:,} bytes")
+
     print(f"\nOutput: {out_dir}")
 
     return manifest
@@ -1302,11 +1347,18 @@ def main():
                         help="Comma-separated tiers (default: S,M,L)")
     parser.add_argument("--families", type=str, default=None,
                         help="Comma-separated case families (default: all)")
+    parser.add_argument("--force", action="store_true",
+                        help="Overwrite existing output directory")
 
     args = parser.parse_args()
 
     # Default output directory based on draft
     out_dir = args.out if args.out else Path(f"experiments/{args.draft}")
+
+    # Safety check: refuse to overwrite without --force
+    if out_dir.exists() and not args.force:
+        print(f"Error: {out_dir} already exists. Use --force to overwrite.", file=sys.stderr)
+        sys.exit(1)
 
     tiers = [t.strip() for t in args.tiers.split(",")]
     families = [f.strip() for f in args.families.split(",")] if args.families else None
