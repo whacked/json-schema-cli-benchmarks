@@ -12,10 +12,18 @@ let
   # dirschema = (builtins.getFlake "/path/to/dirschema").packages.${pkgs.system}.default;
 
   source-meta-json-schema = pkgs.source-meta-json-schema.overrideAttrs (oldAttrs: {
+    # Enable portable build to avoid -march=native -mtune=native which causes
+    # "Illegal instruction" crashes when the binary is run on a different CPU
+    # than it was compiled on (common in Nix binary cache scenarios)
+    cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
+      "-DJSONSCHEMA_PORTABLE=ON"
+    ];
     postPatch = (oldAttrs.postPatch or "") + ''
-      # Disable clang-tidy as it fails with warnings-as-errors on style issues
-      substituteInPlace vendor/core/cmake/common/targets/library.cmake \
-        --replace-fail 'sourcemeta_clang_tidy_attempt_enable' '# sourcemeta_clang_tidy_attempt_enable'
+      # Disable clang-tidy if the pattern exists (varies by nixpkgs/source version)
+      if grep -q 'sourcemeta_clang_tidy_attempt_enable' vendor/core/cmake/common/targets/library.cmake 2>/dev/null; then
+        substituteInPlace vendor/core/cmake/common/targets/library.cmake \
+          --replace-fail 'sourcemeta_clang_tidy_attempt_enable' '# sourcemeta_clang_tidy_attempt_enable'
+      fi
     '';
     # Rename the binary because pkgs.jsonschema also exposes `jsonschema`
     postInstall = (oldAttrs.postInstall or "") + ''
