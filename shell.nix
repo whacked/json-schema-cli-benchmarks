@@ -11,6 +11,18 @@ let
   # local:
   # dirschema = (builtins.getFlake "/path/to/dirschema").packages.${pkgs.system}.default;
 
+  source-meta-json-schema = pkgs.source-meta-json-schema.overrideAttrs (oldAttrs: {
+    postPatch = (oldAttrs.postPatch or "") + ''
+      # Disable clang-tidy as it fails with warnings-as-errors on style issues
+      substituteInPlace vendor/core/cmake/common/targets/library.cmake \
+        --replace-fail 'sourcemeta_clang_tidy_attempt_enable' '# sourcemeta_clang_tidy_attempt_enable'
+    '';
+    # Rename the binary because pkgs.jsonschema also exposes `jsonschema`
+    postInstall = (oldAttrs.postInstall or "") + ''
+      mv $out/bin/jsonschema $out/bin/jsonschema-sourcemeta
+    '';
+  });
+
   python = pkgs.python3;
 
   jsf = python.pkgs.buildPythonPackage rec {
@@ -46,6 +58,7 @@ let
 in pkgs.mkShell {
   buildInputs = [
     dirschema
+    source-meta-json-schema
     pkgs.babashka
     pkgs.check-jsonschema
     pkgs.hyperfine
