@@ -16,7 +16,8 @@ set -euo pipefail
 TOOL_BIN="${JSONSCHEMA_SOURCEMETA_BIN:-jsonschema-sourcemeta}"
 
 cmd_version() {
-    "$TOOL_BIN" version 2>/dev/null
+    # Version may go to stdout or stderr depending on build
+    "$TOOL_BIN" version 2>&1
 }
 
 cmd_validate_schema() {

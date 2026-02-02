@@ -13,7 +13,9 @@ set -euo pipefail
 TOOL_BIN="${JV_BIN:-jv}"
 
 cmd_version() {
-    "$TOOL_BIN" --version 2>/dev/null | head -1
+    # jv --version outputs multiple lines; extract version from jsonschema module line
+    # e.g., "github.com/santhosh-tekuri/jsonschema/v6 v6.0.1" -> "v6.0.1"
+    "$TOOL_BIN" --version 2>/dev/null | grep 'jsonschema/v[0-9]' | awk '{print $2}'
 }
 
 cmd_validate_schema() {
