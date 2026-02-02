@@ -35,7 +35,7 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Callable
 
-# jsf must be imported from venv with PYTHONPATH unset
+# jsf is provided by nix-shell (see shell.nix)
 from jsf import JSF
 
 # -----------------------------------------------------------------------------
@@ -44,7 +44,15 @@ from jsf import JSF
 
 @dataclass(frozen=True)
 class TierKnobs:
-    """Configuration knobs that control schema/instance size for a tier."""
+    """Configuration knobs that control schema/instance size for a tier.
+
+    Primary knobs (P, D, N, L, U, E, T, R) control basic dimensions.
+    Derived knobs control schema-specific scaling for particular families.
+
+    When adding a new tier, ALL fields must be specified - this ensures
+    no KeyError surprises at runtime from missing tier entries.
+    """
+    # Primary knobs - control basic dimensions
     P: int  # object width (properties)
     D: int  # nesting depth
     N: int  # array length
@@ -54,8 +62,12 @@ class TierKnobs:
     T: int  # tuple width
     R: int  # ref chain length
 
-    def as_dict(self) -> dict[str, int]:
-        return asdict(self)
+    # Derived knobs - schema-family-specific scaling
+    # These were previously scattered as inline dicts, causing missing key errors
+    array_objects_width: int      # width of objects in array_objects schema
+    allof_terms: int              # number of terms in combinators_allOf schema
+    dependencies_count: int       # number of dependency pairs in dependencies schema
+    pattern_properties_count: int # number of patterns in patternProperties schema
 
 
 TIER_KNOBS = {
@@ -68,6 +80,11 @@ TIER_KNOBS = {
         E=64,
         T=8,
         R=4,
+        # Derived
+        array_objects_width=4,
+        allof_terms=3,
+        dependencies_count=2,
+        pattern_properties_count=2,
     ),
     "M": TierKnobs(
         P=128,
@@ -78,6 +95,11 @@ TIER_KNOBS = {
         E=4096,
         T=32,
         R=16,
+        # Derived
+        array_objects_width=8,
+        allof_terms=8,
+        dependencies_count=8,
+        pattern_properties_count=4,
     ),
     "L": TierKnobs(
         P=256,
@@ -88,16 +110,27 @@ TIER_KNOBS = {
         E=8192,
         T=64,
         R=32,
+        # Derived
+        array_objects_width=16,
+        allof_terms=16,
+        dependencies_count=32,
+        pattern_properties_count=8,
     ),
-    "2L": TierKnobs(
-        P=512,      # 2x L
-        D=48,       # 1.5x L (depth grows slower to avoid stack issues)
-        N=8192,     # 2x L
-        L=8192,     # 2x L
-        U=64,       # 2x L
-        E=16384,    # 2x L
-        T=128,      # 2x L
-        R=48,       # 1.5x L (ref chains grow slower)
+    "XL": TierKnobs(
+        # Primary: ~2x L (depth/ref grow slower to avoid stack issues)
+        P=512,
+        D=48,
+        N=8192,
+        L=8192,
+        U=64,
+        E=16384,
+        T=128,
+        R=48,
+        # Derived: 2x L
+        array_objects_width=32,
+        allof_terms=32,
+        dependencies_count=64,
+        pattern_properties_count=16,
     ),
 }
 
@@ -320,13 +353,10 @@ def schema_array_primitives(knobs: dict, draft: str) -> dict:
     }
 
 
-def schema_array_objects(knobs: dict, draft: str) -> dict:
+def schema_array_objects(knobs: TierKnobs, draft: str) -> dict:
     """Array of N objects with small width."""
     N = knobs.N
-    # Scale object width with tier but keep smaller than P
-    width_by_tier = {"S": 4, "M": 8, "L": 16}
-    tier = next((k for k, v in TIER_KNOBS.items() if v.N == N), "S")
-    obj_width = width_by_tier.get(tier, 4)
+    obj_width = knobs.array_objects_width
 
     properties = {f"f{i}": {"type": "integer"} for i in range(obj_width)}
     required = list(properties.keys())
@@ -389,12 +419,9 @@ def schema_combinators_oneOf(knobs: dict, draft: str) -> dict:
     }
 
 
-def schema_combinators_allOf(knobs: dict, draft: str) -> dict:
+def schema_combinators_allOf(knobs: TierKnobs, draft: str) -> dict:
     """allOf with multiple constraints."""
-    # Scale number of allOf terms
-    n_terms = {"S": 3, "M": 8, "L": 16}
-    tier = next(k for k, v in TIER_KNOBS.items() if v.U == knobs.U)
-    count = n_terms[tier]
+    count = knobs.allof_terms
 
     terms = []
     for i in range(count):
@@ -460,12 +487,9 @@ def schema_ref_graph(knobs: dict, draft: str) -> dict:
     }
 
 
-def schema_dependencies(knobs: dict, draft: str) -> dict:
+def schema_dependencies(knobs: TierKnobs, draft: str) -> dict:
     """dependencies keyword (or dependentRequired in 2019-09+)."""
-    # Scale number of dependency pairs
-    n_deps = {"S": 2, "M": 8, "L": 32}
-    tier = next(k for k, v in TIER_KNOBS.items() if v.P == knobs.P)
-    count = n_deps[tier]
+    count = knobs.dependencies_count
 
     properties = {
         "base": {"type": "string"},
@@ -494,11 +518,9 @@ def schema_dependencies(knobs: dict, draft: str) -> dict:
     return schema
 
 
-def schema_patternProperties(knobs: dict, draft: str) -> dict:
+def schema_patternProperties(knobs: TierKnobs, draft: str) -> dict:
     """patternProperties with multiple patterns."""
-    n_patterns = {"S": 2, "M": 4, "L": 8}
-    tier = next(k for k, v in TIER_KNOBS.items() if v.P == knobs.P)
-    count = n_patterns[tier]
+    count = knobs.pattern_properties_count
 
     patterns = {}
     for i in range(count):
