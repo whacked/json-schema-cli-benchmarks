@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Schema CLI Benchmark Analysis</title>
+  <!-- Bootswatch Sketchy theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/sketchy/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3/dist/d3-scale-chromatic.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3/dist/d3-interpolate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-color@3/dist/d3-color.min.js"></script>
+  <style>
+    .chart-container {
+      width: 100%;
+      height: 350px;
+    }
+    .chart-container.tall {
+      height: 500px;
+    }
+    .filter-options {
+      max-height: 150px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.1);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 0.375rem;
+      padding: 0.5rem;
+    }
+    .filter-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .filter-option input[type="checkbox"] {
+      margin: 0;
+      width: 1em;
+      height: 1em;
+      flex-shrink: 0;
+    }
+    .run-chip {
+      display: inline-flex !important;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .run-chip .close-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    .run-chip .close-btn:hover {
+      opacity: 1;
+    }
+    .filter-option:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .filter-option .count {
+      margin-left: auto;
+      opacity: 0.6;
+      font-size: 0.75rem;
+    }
+    .table-scroll {
+      max-height: 400px;
+      overflow: auto;
+    }
+    textarea.form-control {
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .table td.text-end {
+      font-family: monospace;
+    }
+    .filter-actions .btn {
+      padding: 0.1rem 0.4rem;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-0">JSON Schema CLI Benchmark Analysis</h1>
+      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+        <span class="small">☀️</span>
+        <input class="form-check-input" type="checkbox" role="switch" id="theme-toggle" style="font-size: 1.25rem; margin: 0;">
+        <span class="small">🌙</span>
+      </div>
+    </div>
+
+    <!-- Data Source Panel -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Data Sources</h5>
+        <div class="mb-3" id="run-list"></div>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" id="run-path" placeholder="Path to run directory (e.g., ../results/draft-04/2026-01-29T17-18-30)">
+          <button class="btn btn-primary" type="button" id="add-run-btn">Add Run</button>
+          <button class="btn btn-info" type="button" id="discover-btn">Auto-Discover</button>
+        </div>
+        <small class="text-muted" id="data-stats">No data loaded</small>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Filters</h5>
+        <div class="row" id="filters-grid">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Charts Grid -->
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Mean Time by Tool &amp; Host</h6>
+            <div id="chart-tool-host" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Time vs Instance Size</h6>
+            <div id="chart-size-time" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Summary Statistics</h6>
+            <div class="table-scroll" id="table-summary"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Tool Comparison by Case</h6>
+            <div id="chart-case-compare" class="chart-container tall"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQL Panel -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Custom SQL Query</h5>
+        <div class="mb-3">
+          <textarea class="form-control" id="custom-sql" rows="6">-- Wide table: benchmarks joined with system info
+-- Columns: all event fields + sys_* prefixed system fields
+SELECT
+  sys_hostname,
+  sys_cpu_model,
+  tool,
+  mode,
+  count(*) as n,
+  round(avg(mean_s) * 1000, 2) as avg_ms,
+  round(min(min_s) * 1000, 2) as min_ms,
+  round(max(max_s) * 1000, 2) as max_ms
+FROM wide
+WHERE operation = 'instance'
+GROUP BY sys_hostname, sys_cpu_model, tool, mode
+ORDER BY sys_hostname, tool, mode</textarea>
+        </div>
+        <div class="btn-group mb-3">
+          <button class="btn btn-primary" id="run-sql">Run Query</button>
+          <button class="btn btn-outline-secondary" id="export-csv">Export CSV</button>
+        </div>
+        <div class="table-scroll" id="query-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+
+    // =========================================================================
+    // State
+    // =========================================================================
+    let db = null;
+    let conn = null;
+    const loadedRuns = [];
+
+    const charts = {};
+    const COLORS = (typeof d3 !== 'undefined' && d3.schemeTableau10)
+      ? d3.schemeTableau10
+      : ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac'];
+
+    function getColor(index) {
+      return COLORS[index % COLORS.length];
+    }
+
+    function getChartTextColor() {
+      return currentTheme === 'dark' ? '#eee' : '#333';
+    }
+
+    let currentTheme = 'light';  // Will be updated by theme loader
+
+    const filterState = {};
+    const filterMeta = {};
+
+    // =========================================================================
+    // DuckDB Setup
+    // =========================================================================
+    async function initDuckDB() {
+      const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+      const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+      const worker_url = URL.createObjectURL(
+        new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+      );
+      const worker = new Worker(worker_url);
+      const logger = new duckdb.ConsoleLogger();
+      db = new duckdb.AsyncDuckDB(logger, worker);
+      await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+      conn = await db.connect();
+      console.log('DuckDB initialized');
+    }
+
+    // =========================================================================
+    // Data Loading
+    // =========================================================================
+    async function loadRun(basePath) {
+      try {
+        basePath = basePath.replace(/\/$/, '');
+
+        if (loadedRuns.find(r => r.path === basePath)) {
+          console.log(`Run already loaded: ${basePath}`);
+          return;
+        }
+
+        const sysResponse = await fetch(`${basePath}/system.json`);
+        if (!sysResponse.ok) throw new Error(`Failed to fetch system.json: ${sysResponse.status}`);
+        const system = await sysResponse.json();
+
+        const eventsResponse = await fetch(`${basePath}/events.jsonl`);
+        if (!eventsResponse.ok) throw new Error(`Failed to fetch events.jsonl: ${eventsResponse.status}`);
+        const eventsText = await eventsResponse.text();
+
+        const lines = eventsText.trim().split('\n').filter(l => l);
+        const allEvents = lines.map(l => JSON.parse(l));
+        const benchmarks = allEvents.filter(r => r.event === 'benchmark_result');
+
+        if (benchmarks.length === 0) {
+          throw new Error('No benchmark_result records found');
+        }
+
+        loadedRuns.push({
+          path: basePath,
+          system,
+          eventCount: benchmarks.length,
+          events: benchmarks
+        });
+
+        console.log(`Loaded run: ${basePath} (${benchmarks.length} benchmarks)`);
+
+        await rebuildWideTable();
+        updateRunList();
+        updateDataStats();
+        await analyzeFilters();
+        await updateCharts();
+
+      } catch (err) {
+        console.error('Load error for', basePath, err);
+        alert(`Failed to load run: ${err.message}\n\nCheck console for details.`);
+      }
+    }
+
+    async function rebuildWideTable() {
+      if (loadedRuns.length === 0) {
+        console.log('No runs loaded, skipping table rebuild');
+        return;
+      }
+
+      console.log(`Rebuilding wide table from ${loadedRuns.length} runs...`);
+      await conn.query('DROP TABLE IF EXISTS wide');
+
+      const allRows = [];
+      for (const run of loadedRuns) {
+        for (const event of run.events) {
+          allRows.push({
+            ...event,
+            sys_hostname: run.system.hostname,
+            sys_platform: run.system.platform,
+            sys_cpu_model: run.system.cpu_model,
+            sys_cpu_cores: run.system.cpu_cores,
+            sys_ram_bytes: run.system.ram_bytes,
+            sys_architecture: run.system.architecture,
+            sys_run_id: run.system.run_id,
+            sys_command: run.system.command
+          });
+        }
+      }
+
+      if (allRows.length === 0) return;
+
+      const cols = Object.keys(allRows[0]);
+      const colDefs = cols.map(c => {
+        let type = 'VARCHAR';
+        for (const row of allRows) {
+          const val = row[c];
+          if (val !== null && val !== undefined) {
+            if (typeof val === 'number') {
+              type = Number.isInteger(val) ? 'BIGINT' : 'DOUBLE';
+            } else if (typeof val === 'boolean') {
+              type = 'BOOLEAN';
+            }
+            break;
+          }
+        }
+        return `"${c}" ${type}`;
+      }).join(', ');
+
+      await conn.query(`CREATE TABLE wide (${colDefs})`);
+
+      const batchSize = 50;
+      for (let i = 0; i < allRows.length; i += batchSize) {
+        const batch = allRows.slice(i, i + batchSize);
+        const values = batch.map(row => {
+          const vals = cols.map(c => {
+            const v = row[c];
+            if (v === null || v === undefined) return 'NULL';
+            if (typeof v === 'string') return `'${v.replace(/'/g, "''")}'`;
+            return v;
+          });
+          return `(${vals.join(', ')})`;
+        }).join(', ');
+        try {
+          await conn.query(`INSERT INTO wide VALUES ${values}`);
+        } catch (e) {
+          console.error(`Insert failed at batch ${i}-${i+batchSize}:`, e);
+          throw e;
+        }
+      }
+
+      console.log(`Built wide table with ${allRows.length} rows`);
+    }
+
+    function removeRun(path) {
+      const idx = loadedRuns.findIndex(r => r.path === path);
+      if (idx >= 0) {
+        loadedRuns.splice(idx, 1);
+        rebuildWideTable().then(() => {
+          updateRunList();
+          updateDataStats();
+          analyzeFilters();
+          updateCharts();
+        });
+      }
+    }
+
+    async function parseDirectoryListing(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.log(`Directory listing failed for ${url}: ${response.status}`);
+          return [];
+        }
+        const html = await response.text();
+        console.log(`Fetched listing for ${url}, length=${html.length}`);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = [...doc.querySelectorAll('a')]
+          .map(a => a.textContent.replace(/\/$/, ''))
+          .filter(name => name && name !== '..' && !name.startsWith('?'));
+        console.log(`Found links in ${url}:`, links);
+        return links;
+      } catch (e) {
+        console.error(`Could not list ${url}:`, e);
+        return [];
+      }
+    }
+
+    async function autoDiscover() {
+      const btn = document.getElementById('discover-btn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Discovering...';
+
+      try {
+        const resultsBase = '../results';
+        const drafts = await parseDirectoryListing(`${resultsBase}/`);
+        const draftDirs = drafts.filter(name => name.startsWith('draft-'));
+        console.log('Discovered drafts:', draftDirs);
+
+        const runPattern = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}$/;
+        const allRuns = [];
+
+        for (const draft of draftDirs) {
+          const runs = await parseDirectoryListing(`${resultsBase}/${draft}/`);
+          const runDirs = runs.filter(name => runPattern.test(name));
+          console.log(`Discovered runs in ${draft}:`, runDirs);
+
+          for (const run of runDirs) {
+            allRuns.push(`${resultsBase}/${draft}/${run}`);
+          }
+        }
+
+        console.log(`Loading ${allRuns.length} runs...`);
+        for (const path of allRuns) {
+          try {
+            await loadRun(path);
+          } catch (e) {
+            console.log(`Could not load ${path}:`, e.message);
+          }
+        }
+
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    function updateRunList() {
+      const container = document.getElementById('run-list');
+      container.innerHTML = loadedRuns.map(run => `
+        <span class="badge bg-info text-dark me-2 mb-1 run-chip">
+          <span>${run.system.hostname} (${run.path.split('/').pop()})</span>
+          <button type="button" class="close-btn" aria-label="Remove" onclick="window.removeRun('${run.path}')">&times;</button>
+        </span>
+      `).join('');
+    }
+
+    function updateDataStats() {
+      const container = document.getElementById('data-stats');
+      if (loadedRuns.length === 0) {
+        container.textContent = 'No data loaded';
+        return;
+      }
+      const totalEvents = loadedRuns.reduce((sum, r) => sum + r.eventCount, 0);
+      const hosts = [...new Set(loadedRuns.map(r => r.system.hostname))];
+      container.textContent = `${loadedRuns.length} runs, ${totalEvents} benchmarks, ${hosts.length} host(s): ${hosts.join(', ')}`;
+    }
+
+    window.removeRun = removeRun;
+
+    // =========================================================================
+    // Filter Analysis & Generation
+    // =========================================================================
+    async function analyzeFilters() {
+      if (loadedRuns.length === 0) return;
+
+      const filterCols = [
+        'sys_hostname', 'sys_platform', 'sys_cpu_model',
+        'tool', 'mode', 'operation', 'draft', 'case_id'
+      ];
+
+      const container = document.getElementById('filters-grid');
+      container.innerHTML = '';
+
+      for (const col of filterCols) {
+        try {
+          const result = await conn.query(`
+            SELECT DISTINCT "${col}" as val, count(*) as cnt
+            FROM wide
+            WHERE "${col}" IS NOT NULL
+            GROUP BY "${col}"
+            ORDER BY cnt DESC
+          `);
+          const rows = result.toArray();
+
+          if (rows.length === 0) continue;
+
+          const values = rows.map(r => r.val);
+          const counts = Object.fromEntries(rows.map(r => [r.val, r.cnt]));
+
+          const prevMeta = filterMeta[col];
+          filterMeta[col] = { values, counts, type: 'categorical' };
+
+          if (!filterState[col]) {
+            filterState[col] = new Set(values);
+            console.log(`Initialized ${col} with ${values.length} values`);
+          } else {
+            for (const val of values) {
+              const wasInPrevMeta = prevMeta && prevMeta.values.includes(val);
+              if (!wasInPrevMeta) {
+                filterState[col].add(val);
+                console.log(`Added new value to ${col}: ${val}`);
+              }
+            }
+          }
+
+          const labelText = col.replace('sys_', '').replace(/_/g, ' ');
+
+          const colDiv = document.createElement('div');
+          colDiv.className = 'col-md-3 col-sm-6 mb-3';
+          colDiv.id = `filter-group-${col}`;
+
+          colDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label mb-0 small text-uppercase text-muted">${labelText}</label>
+              <div class="btn-group filter-actions">
+                <button class="btn btn-outline-secondary" data-action="all" data-col="${col}">All</button>
+                <button class="btn btn-outline-secondary" data-action="none" data-col="${col}">None</button>
+                <button class="btn btn-outline-secondary" data-action="invert" data-col="${col}">Inv</button>
+              </div>
+            </div>
+            <div class="filter-options" id="filter-options-${col}"></div>
+          `;
+
+          colDiv.querySelectorAll('button[data-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const action = btn.dataset.action;
+              const colName = btn.dataset.col;
+              const meta = filterMeta[colName];
+              if (!meta) return;
+
+              if (action === 'all') {
+                filterState[colName] = new Set(meta.values);
+              } else if (action === 'none') {
+                filterState[colName] = new Set();
+              } else if (action === 'invert') {
+                const current = filterState[colName];
+                filterState[colName] = new Set(meta.values.filter(v => !current.has(v)));
+              }
+              renderFilterOptions(colName);
+              updateCharts();
+            });
+          });
+
+          container.appendChild(colDiv);
+          renderFilterOptions(col);
+
+        } catch (e) {
+          console.log(`Could not analyze ${col}:`, e.message);
+        }
+      }
+    }
+
+    function renderFilterOptions(col) {
+      const meta = filterMeta[col];
+      if (!meta) return;
+
+      const container = document.getElementById(`filter-options-${col}`);
+      if (!container) return;
+
+      const selected = filterState[col] || new Set();
+      console.log(`renderFilterOptions(${col}): ${meta.values.length} values, ${selected.size} selected`);
+
+      container.innerHTML = meta.values.map(val => {
+        const checked = selected.has(val) ? 'checked' : '';
+        const count = meta.counts[val] || 0;
+        const escapedVal = val.replace(/"/g, '&quot;');
+        return `
+          <label class="filter-option">
+            <input type="checkbox" ${checked} data-col="${col}" data-val="${escapedVal}">
+            <span class="val">${val}</span>
+            <span class="count">${count}</span>
+          </label>
+        `;
+      }).join('');
+
+      container.onchange = (e) => {
+        if (e.target.type !== 'checkbox') return;
+
+        const colName = e.target.dataset.col;
+        const val = e.target.dataset.val;
+
+        console.log(`Checkbox change: col=${colName}, val=${val}, checked=${e.target.checked}`);
+
+        if (!filterState[colName]) {
+          console.error(`No filterState for ${colName}`);
+          return;
+        }
+
+        if (e.target.checked) {
+          filterState[colName].add(val);
+        } else {
+          filterState[colName].delete(val);
+        }
+
+        console.log(`Filter ${colName}: ${filterState[colName].size} selected`);
+        updateCharts();
+      };
+    }
+
+    function getFilterClause() {
+      const clauses = [];
+      for (const [col, selected] of Object.entries(filterState)) {
+        if (!(selected instanceof Set)) continue;
+        const meta = filterMeta[col];
+        if (!meta) continue;
+
+        if (selected.size === meta.values.length) continue;
+
+        if (selected.size === 0) {
+          return 'WHERE 1=0';
+        }
+
+        const vals = [...selected].map(v => `'${v.replace(/'/g, "''")}'`).join(', ');
+        clauses.push(`"${col}" IN (${vals})`);
+      }
+      return clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
+    }
+
+    // =========================================================================
+    // Charts
+    // =========================================================================
+    async function updateCharts() {
+      if (loadedRuns.length === 0) {
+        document.querySelectorAll('.chart-container').forEach(c => {
+          c.innerHTML = '<p class="text-center text-muted">Load data to view</p>';
+        });
+        document.getElementById('table-summary').innerHTML = '<p class="text-center text-muted">Load data to view</p>';
+        return;
+      }
+
+      const where = getFilterClause();
+      await Promise.all([
+        renderToolHostChart(where),
+        renderSizeTimeChart(where),
+        renderSummaryTable(where),
+        renderCaseCompareChart(where)
+      ]);
+    }
+
+    async function renderToolHostChart(where) {
+      const container = document.getElementById('chart-tool-host');
+      try {
+        const result = await conn.query(`
+          SELECT sys_hostname, tool, mode, avg(mean_s) * 1000 as avg_ms
+          FROM wide
+          ${where || 'WHERE 1=1'}
+          GROUP BY sys_hostname, tool, mode
+          ORDER BY sys_hostname, tool, mode
+        `);
+        const data = result.toArray();
+
+        if (data.length === 0) {
+          if (charts.toolHost) {
+            charts.toolHost.dispose();
+            charts.toolHost = null;
+          }
+          container.innerHTML = '<p class="text-center text-muted">No data</p>';
+          return;
+        }
+
+        if (!charts.toolHost) {
+          charts.toolHost = echarts.init(container);
+        }
+
+        const tools = [...new Set(data.map(d => d.tool))];
+        const groups = [...new Set(data.map(d => `${d.sys_hostname} (${d.mode})`))];
+
+        const series = groups.map((group, idx) => {
+          const [hostname, mode] = group.match(/(.+) \((.+)\)/).slice(1);
+          return {
+            name: group,
+            type: 'bar',
+            data: tools.map(tool => {
+              const row = data.find(d => d.tool === tool && d.sys_hostname === hostname && d.mode === mode);
+              return row ? row.avg_ms : 0;
+            }),
+            itemStyle: { color: getColor(idx) }
+          };
+        });
+
+        const textColor = getChartTextColor();
+        charts.toolHost.setOption({
+          backgroundColor: 'transparent',
+          textStyle: { color: textColor, fontSize: 11 },
+          tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+          legend: { data: groups, textStyle: { color: textColor, fontSize: 10 }, type: 'scroll' },
+          grid: { left: 50, right: 20, bottom: 30, top: 60 },
+          xAxis: { type: 'category', data: tools, axisLabel: { rotate: 15 } },
+          yAxis: { type: 'value', name: 'ms', axisLabel: { fontSize: 10 } },
+          series
+        }, true);
+
+      } catch (err) {
+        container.innerHTML = `<p class="text-center text-danger">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function renderSizeTimeChart(where) {
+      const container = document.getElementById('chart-size-time');
+      try {
+        const result = await conn.query(`
+          SELECT
+            instance_bytes / 1024.0 as size_kb,
+            mean_s * 1000 as mean_ms,
+            tool,
+            sys_hostname
+          FROM wide
+          ${where || 'WHERE 1=1'}
+          AND instance_bytes IS NOT NULL
+        `);
+        const data = result.toArray();
+
+        if (data.length === 0) {
+          if (charts.sizeTime) {
+            charts.sizeTime.dispose();
+            charts.sizeTime = null;
+          }
+          container.innerHTML = '<p class="text-center text-muted">No data</p>';
+          return;
+        }
+
+        if (!charts.sizeTime) {
+          charts.sizeTime = echarts.init(container);
+        }
+
+        const groups = [...new Set(data.map(d => `${d.tool} @ ${d.sys_hostname}`))];
+        const series = groups.map((group, idx) => {
+          const [tool, hostname] = group.split(' @ ');
+          return {
+            name: group,
+            type: 'scatter',
+            data: data.filter(d => d.tool === tool && d.sys_hostname === hostname)
+                      .map(d => [d.size_kb, d.mean_ms]),
+            itemStyle: { color: getColor(idx) },
+            symbolSize: 6
+          };
+        });
+
+        const textColor = getChartTextColor();
+        charts.sizeTime.setOption({
+          backgroundColor: 'transparent',
+          textStyle: { color: textColor, fontSize: 11 },
+          tooltip: {
+            trigger: 'item',
+            formatter: p => `${p.seriesName}<br>${p.value[0].toFixed(1)}KB: ${p.value[1].toFixed(2)}ms`
+          },
+          legend: { data: groups, textStyle: { color: textColor, fontSize: 10 }, type: 'scroll' },
+          grid: { left: 50, right: 20, bottom: 40, top: 60 },
+          xAxis: { type: 'log', name: 'Size (KB)', nameLocation: 'middle', nameGap: 25 },
+          yAxis: { type: 'value', name: 'Time (ms)' },
+          series
+        }, true);
+
+      } catch (err) {
+        container.innerHTML = `<p class="text-center text-danger">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function renderSummaryTable(where) {
+      const container = document.getElementById('table-summary');
+      try {
+        const result = await conn.query(`
+          SELECT
+            sys_hostname,
+            tool,
+            mode,
+            count(*) as n,
+            round(avg(mean_s) * 1000, 2) as avg_ms,
+            round(stddev(mean_s) * 1000, 2) as std_ms,
+            round(min(min_s) * 1000, 2) as min_ms,
+            round(max(max_s) * 1000, 2) as max_ms,
+            round(sum(instance_bytes) / 1024.0 / 1024.0, 1) as total_mb
+          FROM wide
+          ${where || 'WHERE 1=1'}
+          GROUP BY sys_hostname, tool, mode
+          ORDER BY sys_hostname, avg_ms
+        `);
+        const data = result.toArray();
+
+        if (data.length === 0) {
+          container.innerHTML = '<p class="text-center text-muted">No data</p>';
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="table table-sm table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Host</th>
+                <th>Tool</th>
+                <th>Mode</th>
+                <th class="text-end">N</th>
+                <th class="text-end">Avg (ms)</th>
+                <th class="text-end">Std</th>
+                <th class="text-end">Min</th>
+                <th class="text-end">Max</th>
+                <th class="text-end">MB</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `<tr>
+                <td>${row.sys_hostname}</td>
+                <td>${row.tool}</td>
+                <td>${row.mode}</td>
+                <td class="text-end">${row.n}</td>
+                <td class="text-end">${row.avg_ms}</td>
+                <td class="text-end">${row.std_ms || '-'}</td>
+                <td class="text-end">${row.min_ms}</td>
+                <td class="text-end">${row.max_ms}</td>
+                <td class="text-end">${row.total_mb || '-'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`;
+      } catch (err) {
+        container.innerHTML = `<p class="text-center text-danger">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function renderCaseCompareChart(where) {
+      const container = document.getElementById('chart-case-compare');
+      try {
+        const result = await conn.query(`
+          SELECT
+            case_id,
+            tool,
+            sys_hostname,
+            avg(mean_s) * 1000 as avg_ms
+          FROM wide
+          ${where || 'WHERE 1=1'}
+          GROUP BY case_id, tool, sys_hostname
+          ORDER BY case_id
+        `);
+        const data = result.toArray();
+
+        if (data.length === 0) {
+          if (charts.caseCompare) {
+            charts.caseCompare.dispose();
+            charts.caseCompare = null;
+          }
+          container.innerHTML = '<p class="text-center text-muted">No data</p>';
+          return;
+        }
+
+        if (!charts.caseCompare) {
+          charts.caseCompare = echarts.init(container);
+        }
+
+        const cases = [...new Set(data.map(d => d.case_id))];
+        const groups = [...new Set(data.map(d => `${d.tool} @ ${d.sys_hostname}`))];
+
+        const series = groups.map((group, idx) => {
+          const [tool, hostname] = group.split(' @ ');
+          return {
+            name: group,
+            type: 'scatter',
+            data: data.filter(d => d.tool === tool && d.sys_hostname === hostname)
+                      .map(d => [d.avg_ms, cases.indexOf(d.case_id)]),
+            itemStyle: { color: getColor(idx) },
+            symbolSize: 6
+          };
+        });
+
+        const textColor = getChartTextColor();
+        charts.caseCompare.setOption({
+          backgroundColor: 'transparent',
+          textStyle: { color: textColor, fontSize: 10 },
+          tooltip: {
+            trigger: 'item',
+            formatter: p => `${cases[p.value[1]]}<br>${p.seriesName}: ${p.value[0].toFixed(2)}ms`
+          },
+          legend: { data: groups, textStyle: { color: textColor, fontSize: 10 }, type: 'scroll' },
+          grid: { left: 180, right: 20, bottom: 30, top: 60 },
+          xAxis: { type: 'value', name: 'Time (ms)' },
+          yAxis: {
+            type: 'category',
+            data: cases,
+            axisLabel: { fontSize: 9, width: 170, overflow: 'truncate' }
+          },
+          series
+        }, true);
+
+      } catch (err) {
+        container.innerHTML = `<p class="text-center text-danger">Error: ${err.message}</p>`;
+      }
+    }
+
+    // =========================================================================
+    // Custom SQL
+    // =========================================================================
+    async function runCustomQuery() {
+      const sql = document.getElementById('custom-sql').value;
+      const container = document.getElementById('query-result');
+
+      try {
+        const result = await conn.query(sql);
+        const data = result.toArray();
+
+        if (data.length === 0) {
+          container.innerHTML = '<p class="text-center text-muted">No results</p>';
+          return;
+        }
+
+        const columns = Object.keys(data[0]);
+        container.innerHTML = `
+          <table class="table table-sm table-striped table-hover">
+            <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+            <tbody>
+              ${data.map(row => `<tr>${columns.map(c => {
+                const val = row[c];
+                const isNum = typeof val === 'number';
+                return `<td class="${isNum ? 'text-end' : ''}">${val ?? ''}</td>`;
+              }).join('')}</tr>`).join('')}
+            </tbody>
+          </table>`;
+      } catch (err) {
+        container.innerHTML = `<p class="text-center text-danger">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function exportCSV() {
+      const sql = document.getElementById('custom-sql').value;
+      try {
+        const result = await conn.query(sql);
+        const data = result.toArray();
+        if (data.length === 0) {
+          alert('No data to export');
+          return;
+        }
+
+        const columns = Object.keys(data[0]);
+        const csv = [
+          columns.join(','),
+          ...data.map(row => columns.map(c => {
+            const v = row[c];
+            if (v === null || v === undefined) return '';
+            if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) {
+              return `"${v.replace(/"/g, '""')}"`;
+            }
+            return v;
+          }).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'benchmark-results.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(`Export failed: ${err.message}`);
+      }
+    }
+
+    // =========================================================================
+    // Theme Toggle
+    // =========================================================================
+    currentTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      document.getElementById('theme-toggle').checked = (theme === 'dark');
+      currentTheme = theme;
+      localStorage.setItem('theme', theme);
+
+      // Update chart colors
+      const chartTextColor = theme === 'dark' ? '#eee' : '#333';
+      Object.values(charts).forEach(chart => {
+        if (chart) {
+          chart.setOption({
+            textStyle: { color: chartTextColor },
+            legend: { textStyle: { color: chartTextColor } }
+          });
+        }
+      });
+    }
+
+    document.getElementById('theme-toggle').addEventListener('change', (e) => {
+      applyTheme(e.target.checked ? 'dark' : 'light');
+    });
+
+    // Apply saved theme on load
+    applyTheme(currentTheme);
+
+    // =========================================================================
+    // Event Handlers
+    // =========================================================================
+    document.getElementById('add-run-btn').addEventListener('click', () => {
+      const path = document.getElementById('run-path').value.trim();
+      if (path) {
+        loadRun(path);
+        document.getElementById('run-path').value = '';
+      }
+    });
+
+    document.getElementById('run-path').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const path = e.target.value.trim();
+        if (path) {
+          loadRun(path);
+          e.target.value = '';
+        }
+      }
+    });
+
+    document.getElementById('discover-btn').addEventListener('click', autoDiscover);
+    document.getElementById('run-sql').addEventListener('click', runCustomQuery);
+    document.getElementById('export-csv').addEventListener('click', exportCSV);
+
+    window.addEventListener('resize', () => {
+      Object.values(charts).forEach(c => c?.resize());
+    });
+
+    // =========================================================================
+    // Init
+    // =========================================================================
+    initDuckDB().then(() => {
+      console.log('Ready - add runs or click Auto-Discover');
+    });
+  </script>
+</body>
+</html>
