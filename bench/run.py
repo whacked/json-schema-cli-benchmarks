@@ -21,10 +21,11 @@ import platform
 import shlex
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from functools import partial
 from pathlib import Path
-from typing import Iterator, Literal
+from typing import Callable, Iterator, Literal
 
 import orjson
 import typer
@@ -32,7 +33,6 @@ import yaml
 from loguru import logger
 from pydantic import ValidationError
 from tqdm import tqdm
-from tqdm.contrib.concurrent import thread_map
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -629,6 +629,33 @@ def run_single_job(
     return (correctness, benchmark)
 
 
+@contextmanager
+def job_processor(
+    jobs: list,
+    worker_fn: Callable,
+    parallelism: int,
+):
+    """Context manager that yields an iterator over job results.
+
+    Encapsulates the parallel/serial execution difference so the consumer
+    code (write loop) is identical regardless of mode.
+
+    - parallelism=1: Runs in main thread (debuggable with ipdb)
+    - parallelism>1: Uses thread pool, streams results via as_completed()
+
+    Results arrive in completion order when parallel, but each result
+    contains full job metadata so order doesn't matter for event logging.
+    """
+    if parallelism == 1:
+        # Serial: generator runs in main thread - ipdb works
+        yield (worker_fn(job) for job in jobs)
+    else:
+        # Parallel: thread pool with as_completed for streaming results
+        with ThreadPoolExecutor(max_workers=parallelism) as executor:
+            futures = [executor.submit(worker_fn, job) for job in jobs]
+            yield (f.result() for f in as_completed(futures))
+
+
 @app.command()
 def main(
     draft: str = typer.Argument(..., help="Draft to benchmark (e.g., draft-07)"),
@@ -740,29 +767,24 @@ def main(
         job, adapter = job_adapter
         return run_single_job(job, adapter, jobs_dir, skip_speed, warmup, runs)
 
-    # Run jobs (parallel or sequential based on parallelism)
+    # Run jobs and write results as they complete
+    # Uses job_processor context manager to handle parallel/serial uniformly
     logger.info(f"\n{'='*60}")
     logger.info(f"Running jobs...")
     logger.info(f"{'='*60}")
 
-    if parallelism == 1:
-        # Sequential: list comprehension with tqdm (debuggable with ipdb)
-        results = [worker(ja) for ja in tqdm(all_jobs, desc="Jobs")]
-    else:
-        # Parallel: thread_map handles pool + progress bar
-        results = thread_map(worker, all_jobs, max_workers=parallelism, desc="Jobs")
+    with job_processor(all_jobs, worker, parallelism) as results:
+        for correctness, benchmark in tqdm(results, total=total_jobs, desc="Jobs"):
+            # Write event immediately as each result arrives
+            write_event(events_file, correctness)
 
-    # Write results sequentially (main thread)
-    for (job, _), (correctness, benchmark) in zip(all_jobs, results):
-        write_event(events_file, correctness)
-
-        if correctness.match:
-            matched += 1
-            if benchmark:
-                write_event(events_file, benchmark)
-                benchmarked += 1
-        else:
-            mismatched += 1
+            if correctness.match:
+                matched += 1
+                if benchmark:
+                    write_event(events_file, benchmark)
+                    benchmarked += 1
+            else:
+                mismatched += 1
 
     # Summary
     logger.info("")
