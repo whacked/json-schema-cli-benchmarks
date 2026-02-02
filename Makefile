@@ -150,16 +150,13 @@ clean-%:
 # Corpus generation (multi-draft support)
 # -----------------------------------------------------------------------------
 
-# Note: jsf requires venv with PYTHONPATH unset (conflicts with nix python)
-VENV_PYTHON := unset PYTHONPATH && source .venv/bin/activate && python
-
 ## gen-corpus DRAFT=...        Generate benchmark corpus for a draft via jsf
 gen-corpus: _check-draft
-	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft $(DRAFT) --seed 0
+	python3 $(TOOLS_DIR)/generate_corpus.py --draft $(DRAFT) --seed 0 --force
 
 ## gen-corpus-small DRAFT=...  Generate small corpus (S tier only, fewer instances)
 gen-corpus-small: _check-draft
-	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft $(DRAFT) --seed 0 --tiers S --n-valid 5 --m-invalid 3
+	python3 $(TOOLS_DIR)/generate_corpus.py --draft $(DRAFT) --seed 0 --tiers S --n-valid 5 --m-invalid 3 --force
 
 ## clean-corpus DRAFT=...      Remove generated corpus for a draft
 clean-corpus: _check-draft
@@ -168,15 +165,15 @@ clean-corpus: _check-draft
 # Convenience targets for common drafts
 ## gen-corpus-draft-04         Generate draft-04 benchmark corpus via jsf
 gen-corpus-draft-04:
-	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft draft-04 --seed 0
+	python3 $(TOOLS_DIR)/generate_corpus.py --draft draft-04 --seed 0 --force
 
 ## gen-corpus-draft-07         Generate draft-07 benchmark corpus via jsf
 gen-corpus-draft-07:
-	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft draft-07 --seed 0
+	python3 $(TOOLS_DIR)/generate_corpus.py --draft draft-07 --seed 0 --force
 
 ## gen-corpus-2020-12          Generate 2020-12 benchmark corpus via jsf
 gen-corpus-2020-12:
-	@$(VENV_PYTHON) $(TOOLS_DIR)/generate_corpus.py --draft 2020-12 --seed 0
+	python3 $(TOOLS_DIR)/generate_corpus.py --draft 2020-12 --seed 0 --force
 
 # -----------------------------------------------------------------------------
 # Experiment scaffolding (delegates to experiment-manager.bb.clj)
