@@ -89,6 +89,25 @@
 ;; State gathering (pure bb, inspectable)
 ;; -----------------------------------------------------------------------------
 
+(defn run-dirschema-validate
+  "Run dirschema validate with JSON output. Returns {:valid bool :errors [...]} or nil."
+  ^java.util.Map [^String draft ^java.util.Map manifest]
+  (when manifest
+    (try
+      (let [spec (sh-json "jsonnet"
+                          "--ext-code" (str "manifest=" (json/generate-string manifest))
+                          (str (fs/path dirschema-dir "experiment-cases.jsonnet")))
+            result (sh-stdin (json/generate-string spec)
+                             "dirschema" "validate" "-format" "json"
+                             "--root" (str (fs/path experiments-dir draft)) "-")]
+        (if (zero? (:exit result))
+          {:valid true :errors []}
+          ;; Parse JSON output for structured errors
+          (let [parsed (json/parse-string (:out result) true)]
+            {:valid false :errors (or (:errors parsed) [])})))
+      (catch Exception e
+        {:valid false :errors [{:message (str "dirschema error: " (.getMessage e))}]}))))
+
 (defn gather-state
   "Collect all state needed for status display. Pure data, no side effects."
   ^java.util.Map [^String draft]
@@ -96,34 +115,21 @@
         mpath (manifest-path draft)
         manifest (load-manifest draft)
         cases (or (:cases manifest) {})
-        case-ids (keys cases)]
+        dirschema-result (run-dirschema-validate draft manifest)
+        ;; Simple check: does cases/ directory exist?
+        cases-dir-exists (fs/exists? (fs/path exp-dir "cases"))]
+    ;; (println "CASES EXIST" cases-dir-exists draft)
+    ;; (println "===========" dirschema-result)
     {:draft draft
      :exp-dir (str exp-dir)
      :manifest-path (some-> mpath str)
      :manifest-name (some-> mpath fs/file-name str)
      :manifest manifest
      :case-count (count cases)
-     :case-ids (mapv name case-ids)
-
-     ;; File checks
      :dir-exists (fs/exists? exp-dir)
-     :missing-dirs (->> case-ids
-                        (filter #(not (fs/exists? (fs/path exp-dir "cases" (name %) ))))
-                        (mapv name))
-     :missing-schemas (->> case-ids
-                           (filter #(not (fs/exists? (fs/path exp-dir "cases" (name %) "schema.json"))))
-                           (mapv name))
-     :missing-instances (->> cases
-                             (filter (fn [[_ spec]] (some? (:instance_valid spec))))
-                             (filter (fn [[case-id spec]]
-                                       (let [case-dir (fs/path exp-dir "cases" (name case-id))]
-                                         (if-let [glob-pattern (:instances spec)]
-                                           ;; Has instances glob - check if any files match
-                                           (empty? (fs/glob case-dir glob-pattern))
-                                           ;; No glob - check for instance.json
-                                           (not (fs/exists? (fs/path case-dir "instance.json")))))))
-                             (map first)
-                             (mapv name))}))
+     :cases-dir-exists cases-dir-exists
+     :dirschema-valid (:valid dirschema-result)
+     :dirschema-errors (:errors dirschema-result [])}))
 
 (defn add-schema-validation
   "Add schema validation result (requires shell call)"
@@ -169,22 +175,21 @@
    (->Step :hydrate "hydrate"
            (fn [s]
              (cond
-               ;; Can't be done if no cases defined
-               (not (pos? (:case-count s))) {:done false :detail "create case directories"}
-               (empty? (:missing-dirs s)) {:done true :detail "directories exist"}
-               :else {:done false :detail (str "missing: " (str/join ", " (:missing-dirs s)))})))
+               (not (pos? (:case-count s))) {:done false :detail "define cases first"}
+               (:cases-dir-exists s) {:done true :detail "cases/ exists"}
+               :else {:done false :detail "run hydrate command"})))
 
    (->Step :content "content"
            (fn [s]
-             (cond
-               ;; Can't be done if no cases defined
-               (not (pos? (:case-count s))) {:done false :detail "add schema.json / instance.json"}
-               (seq (:missing-schemas s))
-               {:done false :detail (str "missing schema.json: " (str/join ", " (:missing-schemas s)))}
-               (seq (:missing-instances s))
-               {:done false :detail (str "missing instance.json: " (str/join ", " (:missing-instances s)))}
-               :else
-               {:done true :detail "all files present"})))
+             (let [errors (:dirschema-errors s [])]
+               (cond
+                 (not (pos? (:case-count s))) {:done false :detail "define cases first"}
+                 (:dirschema-valid s) {:done true :detail "all files present"}
+                 :else {:done false
+                        :detail (str (count errors) " missing: "
+                                     (->> errors
+                                          (map :message)
+                                          (str/join ", ")))}))))
 
    (->Step :validate "validate"
            (fn [s]
