@@ -7,7 +7,7 @@ let
   }) { inherit pkgs; };
 
   # remote:
-  dirschema = (builtins.getFlake "github:whacked/dirschema/e5b81b8").packages.${pkgs.system}.default;
+  dirschema = (builtins.getFlake "github:whacked/dirschema/9666123a2d3bce958e71b5716145659124764ad6").packages.${pkgs.system}.default;
   # local:
   # dirschema = (builtins.getFlake "/path/to/dirschema").packages.${pkgs.system}.default;
 
