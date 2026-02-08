@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "items": {
+    "additionalProperties": false,
+    "properties": {
+      "f0": {
+        "type": "integer"
+      },
+      "f1": {
+        "type": "integer"
+      },
+      "f2": {
+        "type": "integer"
+      },
+      "f3": {
+        "type": "integer"
+      }
+    },
+    "required": [
+      "f0",
+      "f1",
+      "f2",
+      "f3"
+    ],
+    "type": "object"
+  },
+  "maxItems": 32,
+  "minItems": 32,
+  "type": "array"
+}

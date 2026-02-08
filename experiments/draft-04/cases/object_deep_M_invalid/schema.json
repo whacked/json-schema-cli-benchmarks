@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "next": {
+      "properties": {
+        "next": {
+          "properties": {
+            "next": {
+              "properties": {
+                "next": {
+                  "properties": {
+                    "next": {
+                      "properties": {
+                        "next": {
+                          "properties": {
+                            "next": {
+                              "properties": {
+                                "next": {
+                                  "properties": {
+                                    "next": {
+                                      "properties": {
+                                        "next": {
+                                          "properties": {
+                                            "next": {
+                                              "properties": {
+                                                "next": {
+                                                  "properties": {
+                                                    "next": {
+                                                      "properties": {
+                                                        "next": {
+                                                          "properties": {
+                                                            "next": {
+                                                              "properties": {
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "required": [
+                                                                "value"
+                                                              ],
+                                                              "type": "object"
+                                                            },
+                                                            "value": {
+                                                              "type": "integer"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "next"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        "value": {
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "next"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    "value": {
+                                                      "type": "integer"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "next"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "value": {
+                                                  "type": "integer"
+                                                }
+                                              },
+                                              "required": [
+                                                "next"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "value": {
+                                              "type": "integer"
+                                            }
+                                          },
+                                          "required": [
+                                            "next"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "value": {
+                                          "type": "integer"
+                                        }
+                                      },
+                                      "required": [
+                                        "next"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "value": {
+                                      "type": "integer"
+                                    }
+                                  },
+                                  "required": [
+                                    "next"
+                                  ],
+                                  "type": "object"
+                                },
+                                "value": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "next"
+                              ],
+                              "type": "object"
+                            },
+                            "value": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "next"
+                          ],
+                          "type": "object"
+                        },
+                        "value": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "next"
+                      ],
+                      "type": "object"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "next"
+                  ],
+                  "type": "object"
+                },
+                "value": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "next"
+              ],
+              "type": "object"
+            },
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        },
+        "value": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "next"
+      ],
+      "type": "object"
+    },
+    "value": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "next"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalItems": false,
+  "items": [
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    }
+  ],
+  "type": "array"
+}

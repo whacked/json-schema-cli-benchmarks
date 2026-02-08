@@ -1,0 +1,305 @@
+{
+  "$ref": "#/definitions/node0",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "node0": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node1"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node1": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node2"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node10": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node11"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node11": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node12"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node12": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node13"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node13": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node14"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node14": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node15"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node15": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node2": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node3"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node3": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node4"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node4": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node5"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node5": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node6"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node6": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node7"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node7": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node8"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node8": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node9"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "node9": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/shared"
+        },
+        {
+          "properties": {
+            "next": {
+              "$ref": "#/definitions/node10"
+            }
+          },
+          "required": [
+            "next"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "shared": {
+      "properties": {
+        "x": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x"
+      ],
+      "type": "object"
+    }
+  }
+}

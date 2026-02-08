@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "tag": {
+      "enum": "v000001"
+    },
+    "xs": {
+      "items": {
+        "type": "integer"
+      },
+      "maxItems": 32,
+      "minItems": 32,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "tag",
+    "xs"
+  ],
+  "type": "object"
+}

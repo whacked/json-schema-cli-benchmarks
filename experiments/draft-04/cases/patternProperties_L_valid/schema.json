@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "patternProperties": {
+    "^p0_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p1_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p2_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p3_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p4_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p5_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p6_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p7_[a-z]+$": {
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}

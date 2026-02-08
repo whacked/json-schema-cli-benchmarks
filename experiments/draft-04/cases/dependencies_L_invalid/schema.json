@@ -1,0 +1,299 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "dependencies": {
+    "field0": [
+      "dep0"
+    ],
+    "field1": [
+      "dep1"
+    ],
+    "field10": [
+      "dep10"
+    ],
+    "field11": [
+      "dep11"
+    ],
+    "field12": [
+      "dep12"
+    ],
+    "field13": [
+      "dep13"
+    ],
+    "field14": [
+      "dep14"
+    ],
+    "field15": [
+      "dep15"
+    ],
+    "field16": [
+      "dep16"
+    ],
+    "field17": [
+      "dep17"
+    ],
+    "field18": [
+      "dep18"
+    ],
+    "field19": [
+      "dep19"
+    ],
+    "field2": [
+      "dep2"
+    ],
+    "field20": [
+      "dep20"
+    ],
+    "field21": [
+      "dep21"
+    ],
+    "field22": [
+      "dep22"
+    ],
+    "field23": [
+      "dep23"
+    ],
+    "field24": [
+      "dep24"
+    ],
+    "field25": [
+      "dep25"
+    ],
+    "field26": [
+      "dep26"
+    ],
+    "field27": [
+      "dep27"
+    ],
+    "field28": [
+      "dep28"
+    ],
+    "field29": [
+      "dep29"
+    ],
+    "field3": [
+      "dep3"
+    ],
+    "field30": [
+      "dep30"
+    ],
+    "field31": [
+      "dep31"
+    ],
+    "field4": [
+      "dep4"
+    ],
+    "field5": [
+      "dep5"
+    ],
+    "field6": [
+      "dep6"
+    ],
+    "field7": [
+      "dep7"
+    ],
+    "field8": [
+      "dep8"
+    ],
+    "field9": [
+      "dep9"
+    ]
+  },
+  "properties": {
+    "base": {
+      "type": "string"
+    },
+    "dep0": {
+      "type": "string"
+    },
+    "dep1": {
+      "type": "string"
+    },
+    "dep10": {
+      "type": "string"
+    },
+    "dep11": {
+      "type": "string"
+    },
+    "dep12": {
+      "type": "string"
+    },
+    "dep13": {
+      "type": "string"
+    },
+    "dep14": {
+      "type": "string"
+    },
+    "dep15": {
+      "type": "string"
+    },
+    "dep16": {
+      "type": "string"
+    },
+    "dep17": {
+      "type": "string"
+    },
+    "dep18": {
+      "type": "string"
+    },
+    "dep19": {
+      "type": "string"
+    },
+    "dep2": {
+      "type": "string"
+    },
+    "dep20": {
+      "type": "string"
+    },
+    "dep21": {
+      "type": "string"
+    },
+    "dep22": {
+      "type": "string"
+    },
+    "dep23": {
+      "type": "string"
+    },
+    "dep24": {
+      "type": "string"
+    },
+    "dep25": {
+      "type": "string"
+    },
+    "dep26": {
+      "type": "string"
+    },
+    "dep27": {
+      "type": "string"
+    },
+    "dep28": {
+      "type": "string"
+    },
+    "dep29": {
+      "type": "string"
+    },
+    "dep3": {
+      "type": "string"
+    },
+    "dep30": {
+      "type": "string"
+    },
+    "dep31": {
+      "type": "string"
+    },
+    "dep4": {
+      "type": "string"
+    },
+    "dep5": {
+      "type": "string"
+    },
+    "dep6": {
+      "type": "string"
+    },
+    "dep7": {
+      "type": "string"
+    },
+    "dep8": {
+      "type": "string"
+    },
+    "dep9": {
+      "type": "string"
+    },
+    "field0": {
+      "type": "string"
+    },
+    "field1": {
+      "type": "string"
+    },
+    "field10": {
+      "type": "string"
+    },
+    "field11": {
+      "type": "string"
+    },
+    "field12": {
+      "type": "string"
+    },
+    "field13": {
+      "type": "string"
+    },
+    "field14": {
+      "type": "string"
+    },
+    "field15": {
+      "type": "string"
+    },
+    "field16": {
+      "type": "string"
+    },
+    "field17": {
+      "type": "string"
+    },
+    "field18": {
+      "type": "string"
+    },
+    "field19": {
+      "type": "string"
+    },
+    "field2": {
+      "type": "string"
+    },
+    "field20": {
+      "type": "string"
+    },
+    "field21": {
+      "type": "string"
+    },
+    "field22": {
+      "type": "string"
+    },
+    "field23": {
+      "type": "string"
+    },
+    "field24": {
+      "type": "string"
+    },
+    "field25": {
+      "type": "string"
+    },
+    "field26": {
+      "type": "string"
+    },
+    "field27": {
+      "type": "string"
+    },
+    "field28": {
+      "type": "string"
+    },
+    "field29": {
+      "type": "string"
+    },
+    "field3": {
+      "type": "string"
+    },
+    "field30": {
+      "type": "string"
+    },
+    "field31": {
+      "type": "string"
+    },
+    "field4": {
+      "type": "string"
+    },
+    "field5": {
+      "type": "string"
+    },
+    "field6": {
+      "type": "string"
+    },
+    "field7": {
+      "type": "string"
+    },
+    "field8": {
+      "type": "string"
+    },
+    "field9": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

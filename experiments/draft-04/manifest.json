@@ -1,0 +1,914 @@
+{
+  "cases": {
+    "array_objects_L_invalid": {
+      "description": "Array of objects - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_objects",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "array_objects_L_valid": {
+      "description": "Array of objects - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_objects",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "array_objects_M_invalid": {
+      "description": "Array of objects - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_objects",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "array_objects_M_valid": {
+      "description": "Array of objects - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_objects",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "array_objects_S_invalid": {
+      "description": "Array of objects - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_objects",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "array_objects_S_valid": {
+      "description": "Array of objects - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_objects",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "array_objects_schema_items_not_schema": {
+      "description": "Array of objects - invalid schema (items_not_schema)",
+      "instance_valid": null,
+      "meta": {
+        "family": "array_objects",
+        "schema_variant": "items_not_schema"
+      },
+      "schema_valid": false
+    },
+    "array_primitives_L_invalid": {
+      "description": "Array of primitive integers - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_primitives",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "array_primitives_L_valid": {
+      "description": "Array of primitive integers - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_primitives",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "array_primitives_M_invalid": {
+      "description": "Array of primitive integers - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_primitives",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "array_primitives_M_valid": {
+      "description": "Array of primitive integers - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_primitives",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "array_primitives_S_invalid": {
+      "description": "Array of primitive integers - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_primitives",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "array_primitives_S_valid": {
+      "description": "Array of primitive integers - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_primitives",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "array_primitives_schema_minitems_string": {
+      "description": "Array of primitive integers - invalid schema (minitems_string)",
+      "instance_valid": null,
+      "meta": {
+        "family": "array_primitives",
+        "schema_variant": "minitems_string"
+      },
+      "schema_valid": false
+    },
+    "array_tuple_L_invalid": {
+      "description": "Tuple array with additionalItems:false - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_tuple",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "array_tuple_L_valid": {
+      "description": "Tuple array with additionalItems:false - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_tuple",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "array_tuple_M_invalid": {
+      "description": "Tuple array with additionalItems:false - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_tuple",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "array_tuple_M_valid": {
+      "description": "Tuple array with additionalItems:false - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_tuple",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "array_tuple_S_invalid": {
+      "description": "Tuple array with additionalItems:false - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_tuple",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "array_tuple_S_valid": {
+      "description": "Tuple array with additionalItems:false - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "array_tuple",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "array_tuple_schema_additionalItems_wrong": {
+      "description": "Tuple array with additionalItems:false - invalid schema (additionalItems_wrong)",
+      "instance_valid": null,
+      "meta": {
+        "family": "array_tuple",
+        "schema_variant": "additionalItems_wrong"
+      },
+      "schema_valid": false
+    },
+    "combinators_allOf_L_invalid": {
+      "description": "allOf constraint intersection - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_allOf",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "combinators_allOf_L_valid": {
+      "description": "allOf constraint intersection - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_allOf",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "combinators_allOf_M_invalid": {
+      "description": "allOf constraint intersection - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_allOf",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "combinators_allOf_M_valid": {
+      "description": "allOf constraint intersection - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_allOf",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "combinators_allOf_S_invalid": {
+      "description": "allOf constraint intersection - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_allOf",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "combinators_allOf_S_valid": {
+      "description": "allOf constraint intersection - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_allOf",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "combinators_allOf_schema_allOf_scalar": {
+      "description": "allOf constraint intersection - invalid schema (allOf_scalar)",
+      "instance_valid": null,
+      "meta": {
+        "family": "combinators_allOf",
+        "schema_variant": "allOf_scalar"
+      },
+      "schema_valid": false
+    },
+    "combinators_oneOf_L_invalid": {
+      "description": "oneOf with discriminated branches - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_oneOf",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "combinators_oneOf_L_valid": {
+      "description": "oneOf with discriminated branches - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_oneOf",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "combinators_oneOf_M_invalid": {
+      "description": "oneOf with discriminated branches - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_oneOf",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "combinators_oneOf_M_valid": {
+      "description": "oneOf with discriminated branches - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_oneOf",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "combinators_oneOf_S_invalid": {
+      "description": "oneOf with discriminated branches - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_oneOf",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "combinators_oneOf_S_valid": {
+      "description": "oneOf with discriminated branches - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "combinators_oneOf",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "combinators_oneOf_schema_oneOf_not_array": {
+      "description": "oneOf with discriminated branches - invalid schema (oneOf_not_array)",
+      "instance_valid": null,
+      "meta": {
+        "family": "combinators_oneOf",
+        "schema_variant": "oneOf_not_array"
+      },
+      "schema_valid": false
+    },
+    "dependencies_L_invalid": {
+      "description": "dependencies keyword behavior - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "dependencies",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "dependencies_L_valid": {
+      "description": "dependencies keyword behavior - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "dependencies",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "dependencies_M_invalid": {
+      "description": "dependencies keyword behavior - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "dependencies",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "dependencies_M_valid": {
+      "description": "dependencies keyword behavior - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "dependencies",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "dependencies_S_invalid": {
+      "description": "dependencies keyword behavior - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "dependencies",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "dependencies_S_valid": {
+      "description": "dependencies keyword behavior - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "dependencies",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "dependencies_schema_dependencies_wrong": {
+      "description": "dependencies keyword behavior - invalid schema (dependencies_wrong)",
+      "instance_valid": null,
+      "meta": {
+        "family": "dependencies",
+        "schema_variant": "dependencies_wrong"
+      },
+      "schema_valid": false
+    },
+    "enum_uniqueItems_L_invalid": {
+      "description": "enum membership and uniqueItems cost - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "enum_uniqueItems",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "enum_uniqueItems_L_valid": {
+      "description": "enum membership and uniqueItems cost - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "enum_uniqueItems",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "enum_uniqueItems_M_invalid": {
+      "description": "enum membership and uniqueItems cost - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "enum_uniqueItems",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "enum_uniqueItems_M_valid": {
+      "description": "enum membership and uniqueItems cost - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "enum_uniqueItems",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "enum_uniqueItems_S_invalid": {
+      "description": "enum membership and uniqueItems cost - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "enum_uniqueItems",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "enum_uniqueItems_S_valid": {
+      "description": "enum membership and uniqueItems cost - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "enum_uniqueItems",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "enum_uniqueItems_schema_enum_not_array": {
+      "description": "enum membership and uniqueItems cost - invalid schema (enum_not_array)",
+      "instance_valid": null,
+      "meta": {
+        "family": "enum_uniqueItems",
+        "schema_variant": "enum_not_array"
+      },
+      "schema_valid": false
+    },
+    "object_basic_L_invalid": {
+      "description": "Baseline object: properties/required/additionalProperties - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_basic",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "object_basic_L_valid": {
+      "description": "Baseline object: properties/required/additionalProperties - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_basic",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "object_basic_M_invalid": {
+      "description": "Baseline object: properties/required/additionalProperties - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_basic",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "object_basic_M_valid": {
+      "description": "Baseline object: properties/required/additionalProperties - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_basic",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "object_basic_S_invalid": {
+      "description": "Baseline object: properties/required/additionalProperties - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_basic",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "object_basic_S_valid": {
+      "description": "Baseline object: properties/required/additionalProperties - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_basic",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "object_basic_schema_bad_regex": {
+      "description": "Baseline object: properties/required/additionalProperties - invalid schema (bad_regex)",
+      "instance_valid": null,
+      "meta": {
+        "family": "object_basic",
+        "schema_variant": "bad_regex"
+      },
+      "schema_valid": false
+    },
+    "object_basic_schema_bad_type": {
+      "description": "Baseline object: properties/required/additionalProperties - invalid schema (bad_type)",
+      "instance_valid": null,
+      "meta": {
+        "family": "object_basic",
+        "schema_variant": "bad_type"
+      },
+      "schema_valid": false
+    },
+    "object_deep_L_invalid": {
+      "description": "Nested object chain for depth traversal - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_deep",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "object_deep_L_valid": {
+      "description": "Nested object chain for depth traversal - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_deep",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "object_deep_M_invalid": {
+      "description": "Nested object chain for depth traversal - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_deep",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "object_deep_M_valid": {
+      "description": "Nested object chain for depth traversal - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_deep",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "object_deep_S_invalid": {
+      "description": "Nested object chain for depth traversal - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_deep",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "object_deep_S_valid": {
+      "description": "Nested object chain for depth traversal - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_deep",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "object_deep_schema_required_not_array": {
+      "description": "Nested object chain for depth traversal - invalid schema (required_not_array)",
+      "instance_valid": null,
+      "meta": {
+        "family": "object_deep",
+        "schema_variant": "required_not_array"
+      },
+      "schema_valid": false
+    },
+    "object_wide_L_invalid": {
+      "description": "Wide object with many properties - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_wide",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "object_wide_L_valid": {
+      "description": "Wide object with many properties - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_wide",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "object_wide_M_invalid": {
+      "description": "Wide object with many properties - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_wide",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "object_wide_M_valid": {
+      "description": "Wide object with many properties - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_wide",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "object_wide_S_invalid": {
+      "description": "Wide object with many properties - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_wide",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "object_wide_S_valid": {
+      "description": "Wide object with many properties - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "object_wide",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "object_wide_schema_properties_not_object": {
+      "description": "Wide object with many properties - invalid schema (properties_not_object)",
+      "instance_valid": null,
+      "meta": {
+        "family": "object_wide",
+        "schema_variant": "properties_not_object"
+      },
+      "schema_valid": false
+    },
+    "patternProperties_L_invalid": {
+      "description": "patternProperties with additionalProperties:false - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "patternProperties",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "patternProperties_L_valid": {
+      "description": "patternProperties with additionalProperties:false - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "patternProperties",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "patternProperties_M_invalid": {
+      "description": "patternProperties with additionalProperties:false - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "patternProperties",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "patternProperties_M_valid": {
+      "description": "patternProperties with additionalProperties:false - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "patternProperties",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "patternProperties_S_invalid": {
+      "description": "patternProperties with additionalProperties:false - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "patternProperties",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "patternProperties_S_valid": {
+      "description": "patternProperties with additionalProperties:false - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "patternProperties",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "patternProperties_schema_patternProperties_not_object": {
+      "description": "patternProperties with additionalProperties:false - invalid schema (patternProperties_not_object)",
+      "instance_valid": null,
+      "meta": {
+        "family": "patternProperties",
+        "schema_variant": "patternProperties_not_object"
+      },
+      "schema_valid": false
+    },
+    "ref_graph_L_invalid": {
+      "description": "$ref chain with shared definitions - tier L invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "ref_graph",
+        "instance_type": "invalid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "ref_graph_L_valid": {
+      "description": "$ref chain with shared definitions - tier L valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "ref_graph",
+        "instance_type": "valid",
+        "tier": "L"
+      },
+      "schema_valid": true
+    },
+    "ref_graph_M_invalid": {
+      "description": "$ref chain with shared definitions - tier M invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "ref_graph",
+        "instance_type": "invalid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "ref_graph_M_valid": {
+      "description": "$ref chain with shared definitions - tier M valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "ref_graph",
+        "instance_type": "valid",
+        "tier": "M"
+      },
+      "schema_valid": true
+    },
+    "ref_graph_S_invalid": {
+      "description": "$ref chain with shared definitions - tier S invalid instances",
+      "instance_valid": false,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "ref_graph",
+        "instance_type": "invalid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "ref_graph_S_valid": {
+      "description": "$ref chain with shared definitions - tier S valid instances",
+      "instance_valid": true,
+      "instances": "instances/*.json",
+      "meta": {
+        "family": "ref_graph",
+        "instance_type": "valid",
+        "tier": "S"
+      },
+      "schema_valid": true
+    },
+    "ref_graph_schema_bad_type_in_def": {
+      "description": "$ref chain with shared definitions - invalid schema (bad_type_in_def)",
+      "instance_valid": null,
+      "meta": {
+        "family": "ref_graph",
+        "schema_variant": "bad_type_in_def"
+      },
+      "schema_valid": false
+    }
+  },
+  "draft": "draft-04"
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "active": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "maxLength": 32,
+      "minLength": 1,
+      "pattern": "*(",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "type": "object"
+}

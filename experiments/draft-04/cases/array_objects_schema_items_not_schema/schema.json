@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "items": 5,
+  "maxItems": 32,
+  "minItems": 32,
+  "type": "array"
+}
