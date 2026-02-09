@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [
+    {
+      "properties": {
+        "p0": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p0"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p1": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p1"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p2": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p2"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p3": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p3"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p4": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p4"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p5": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p5"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p6": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p6"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p7": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p7"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p8": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p8"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p9": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p9"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p10": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p10"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p11": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p11"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p12": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p12"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p13": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p13"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p14": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p14"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p15": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p15"
+      ],
+      "type": "object"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [
+    {
+      "properties": {
+        "p0": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p0"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p1": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p1"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "p2": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "p2"
+      ],
+      "type": "object"
+    }
+  ]
+}

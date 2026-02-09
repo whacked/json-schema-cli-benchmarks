@@ -1,0 +1,293 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k00"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k01"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k02"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k03"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k04"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k05"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k06"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k07"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k08"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k09"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k10"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k11"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k12"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k13"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k14"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "k15"
+          ]
+        },
+        "v": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "v"
+      ],
+      "type": "object"
+    }
+  ]
+}

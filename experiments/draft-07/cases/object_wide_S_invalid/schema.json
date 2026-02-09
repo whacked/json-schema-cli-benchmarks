@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "k0000": {
+      "type": "integer"
+    },
+    "k0001": {
+      "type": "integer"
+    },
+    "k0002": {
+      "type": "integer"
+    },
+    "k0003": {
+      "type": "integer"
+    },
+    "k0004": {
+      "type": "integer"
+    },
+    "k0005": {
+      "type": "integer"
+    },
+    "k0006": {
+      "type": "integer"
+    },
+    "k0007": {
+      "type": "integer"
+    },
+    "k0008": {
+      "type": "integer"
+    },
+    "k0009": {
+      "type": "integer"
+    },
+    "k0010": {
+      "type": "integer"
+    },
+    "k0011": {
+      "type": "integer"
+    },
+    "k0012": {
+      "type": "integer"
+    },
+    "k0013": {
+      "type": "integer"
+    },
+    "k0014": {
+      "type": "integer"
+    },
+    "k0015": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "k0000",
+    "k0001",
+    "k0002",
+    "k0003"
+  ],
+  "type": "object"
+}

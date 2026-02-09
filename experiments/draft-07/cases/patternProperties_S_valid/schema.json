@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "patternProperties": {
+    "^p0_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p1_[a-z]+$": {
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}

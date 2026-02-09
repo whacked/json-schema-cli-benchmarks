@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "dependencies": [],
+  "properties": {
+    "base": {
+      "type": "string"
+    },
+    "dep0": {
+      "type": "string"
+    },
+    "dep1": {
+      "type": "string"
+    },
+    "field0": {
+      "type": "string"
+    },
+    "field1": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
