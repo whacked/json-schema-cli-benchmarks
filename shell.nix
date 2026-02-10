@@ -11,6 +11,8 @@ let
   # local:
   # dirschema = (builtins.getFlake "/path/to/dirschema").packages.${pkgs.system}.default;
 
+  jdxd = (builtins.getFlake "github:whacked/jdxd/850f3be86cf45bc7a2b913a2689d61c49586b69f").packages.${pkgs.system}.default;
+  
   source-meta-json-schema = pkgs.source-meta-json-schema.overrideAttrs (oldAttrs: {
     # Enable portable build to avoid -march=native -mtune=native which causes
     # "Illegal instruction" crashes when the binary is run on a different CPU
@@ -66,6 +68,7 @@ let
 in pkgs.mkShell {
   buildInputs = [
     dirschema
+    jdxd
     source-meta-json-schema
     pkgs.babashka
     pkgs.check-jsonschema
