@@ -21,6 +21,9 @@ import platform
 import shlex
 import subprocess
 import sys
+
+
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -46,6 +49,8 @@ from models.events import (
     Operation,
     Status,
 )
+from models.jobs import JobRecord
+from models.output import OutputRecord
 from models.system import SystemInformation
 
 app = typer.Typer()
@@ -56,15 +61,6 @@ EXIT_CODE_OUTCOME = {
     1: Outcome.INVALID,
     2: Outcome.UNSUPPORTED,
 }
-
-# -----------------------------------------------------------------------------
-# Output capture configuration
-# -----------------------------------------------------------------------------
-# Set to True to capture stdout/stderr from correctness runs.
-# When enabled, writes to results/<draft>/runs/<job_id>/stdout.txt and stderr.txt
-# alongside hyperfine.json (if speed benchmarks are enabled).
-# Useful for debugging mismatches or analyzing error messages across tools.
-CAPTURE_OUTPUT = False
 
 
 # -----------------------------------------------------------------------------
@@ -434,15 +430,11 @@ def enumerate_jobs(
 def run_correctness(
     job: Job,
     adapter: Path,
-    runs_dir: Path | None = None,
-) -> CorrectnessResult:
+) -> tuple[CorrectnessResult, str, str]:
     """Execute correctness check for a job.
 
-    Args:
-        job: The job to run
-        adapter: Path to the adapter script
-        runs_dir: If CAPTURE_OUTPUT is True, base directory for output files.
-                  Writes to runs_dir/<job_id>/stdout.txt and stderr.txt
+    Returns:
+        Tuple of (result, stdout, stderr). Stdout/stderr are raw tool output.
     """
     ts = datetime.now(timezone.utc)
 
@@ -470,24 +462,7 @@ def run_correctness(
     match = determine_match(outcome, job.expected)
     status = determine_status(exit_code)
 
-    # Capture stdout/stderr if enabled (writes to runs/<job_id>/ alongside hyperfine.json)
-    stdout_path = None
-    stderr_path = None
-    if CAPTURE_OUTPUT and runs_dir is not None:
-        job_dir = runs_dir / job.job_id
-        job_dir.mkdir(parents=True, exist_ok=True)
-
-        if stdout:
-            stdout_file = job_dir / "stdout.txt"
-            stdout_file.write_text(stdout)
-            stdout_path = relpath(stdout_file)
-
-        if stderr:
-            stderr_file = job_dir / "stderr.txt"
-            stderr_file.write_text(stderr)
-            stderr_path = relpath(stderr_file)
-
-    return CorrectnessResult(
+    result = CorrectnessResult(
         event="correctness_result",
         ts=ts,
         draft=job.draft,
@@ -505,9 +480,8 @@ def run_correctness(
         outcome=outcome,
         expected=job.expected,
         match=match,
-        stdout_path=stdout_path,
-        stderr_path=stderr_path,
     )
+    return (result, stdout, stderr)
 
 
 def relpath(path: Path) -> str:
@@ -518,11 +492,14 @@ def relpath(path: Path) -> str:
 def run_benchmark(
     job: Job,
     adapter: Path,
-    runs_dir: Path,
     warmup: int = 3,
     runs: int = 10,
-) -> BenchmarkResult | None:
-    """Execute hyperfine benchmark for a job."""
+) -> tuple[BenchmarkResult, JobRecord] | None:
+    """Execute hyperfine benchmark for a job.
+
+    Returns a (BenchmarkResult, JobRecord) pair, or None on failure.
+    The BenchmarkResult goes to events.jsonl; the JobRecord goes to jobs.jsonl.
+    """
     ts = datetime.now(timezone.utc)
 
     # Build the command to benchmark (use relative paths for reproducibility)
@@ -537,18 +514,14 @@ def run_benchmark(
     else:
         cmd = f"cat {instance_rel} | {adapter_rel} validate-instance-stdin {schema_rel}"
 
-    # Output path
-    job_dir = runs_dir / job.job_id
-    job_dir.mkdir(parents=True, exist_ok=True)
-    hyperfine_json = job_dir / "hyperfine.json"
-
     try:
         result = subprocess.run(
             [
                 "hyperfine",
+                "--style", "none",
                 "--warmup", str(warmup),
                 "--runs", str(runs),
-                "--export-json", str(hyperfine_json),
+                "--export-json", "-",
                 "--shell", "bash",
                 "--ignore-failure",  # Allow non-zero exits (INVALID cases)
                 cmd,
@@ -560,12 +533,11 @@ def run_benchmark(
             logger.warning(f"hyperfine failed for {job.job_id}: {result.stderr.decode()}")
             return None
 
-        # Parse hyperfine output
-        with open(hyperfine_json) as f:
-            hf_data = json.load(f)
-
+        # Parse hyperfine JSON from stdout
+        hf_data = json.loads(result.stdout)
         bench = hf_data["results"][0]
-        return BenchmarkResult(
+
+        benchmark_result = BenchmarkResult(
             event="benchmark_result",
             ts=ts,
             draft=job.draft,
@@ -584,8 +556,24 @@ def run_benchmark(
             min_s=bench["min"],
             max_s=bench["max"],
             runs=len(bench["times"]),
-            hyperfine_json_path=relpath(hyperfine_json),
         )
+
+        job_record = JobRecord(
+            command=bench["command"],
+            mean=bench["mean"],
+            stddev=bench["stddev"],
+            median=bench["median"],
+            user=bench["user"],
+            system=bench["system"],
+            min=bench["min"],
+            max=bench["max"],
+            times=bench["times"],
+            exit_codes=bench["exit_codes"],
+            memory_usage_byte=bench["memory_usage_byte"],
+            job_id=job.job_id,
+        )
+
+        return (benchmark_result, job_record)
 
     except subprocess.TimeoutExpired:
         logger.error(f"hyperfine timeout for {job.job_id}")
@@ -603,30 +591,39 @@ def write_event(events_file: Path, event: CorrectnessResult | BenchmarkResult) -
         f.write(orjson.dumps(data).decode() + "\n")
 
 
+def write_job(jobs_file: Path, job_record: JobRecord) -> None:
+    """Append job record to jobs.jsonl."""
+    with open(jobs_file, "a") as f:
+        data = job_record.model_dump(mode="json")
+        # OPT_SORT_KEYS matches `jq -S` key ordering for stable output
+        f.write(orjson.dumps(data, option=orjson.OPT_SORT_KEYS).decode() + "\n")
+
+
 def run_single_job(
     job: Job,
     adapter: Path,
-    jobs_dir: Path,
     skip_speed: bool,
     warmup: int,
     runs: int,
-) -> tuple[CorrectnessResult, BenchmarkResult | None]:
+) -> tuple[CorrectnessResult, BenchmarkResult | None, JobRecord | None, str, str]:
     """Execute a single job (correctness + optional benchmark).
 
     This function is the unit of work for parallel execution. It stays
     sequential internally, so ipdb works when parallelism=1.
 
     Returns:
-        Tuple of (correctness_result, benchmark_result or None)
+        Tuple of (correctness_result, benchmark_result, job_record, stdout, stderr)
     """
-    # Correctness check
-    correctness = run_correctness(job, adapter, jobs_dir if CAPTURE_OUTPUT else None)
+    correctness, stdout, stderr = run_correctness(job, adapter)
 
     benchmark = None
+    job_record = None
     if correctness.match and not skip_speed and correctness.status == Status.ok:
-        benchmark = run_benchmark(job, adapter, jobs_dir, warmup, runs)
+        result = run_benchmark(job, adapter, warmup, runs)
+        if result is not None:
+            benchmark, job_record = result
 
-    return (correctness, benchmark)
+    return (correctness, benchmark, job_record, stdout, stderr)
 
 
 @contextmanager
@@ -704,15 +701,15 @@ def main(
     system_info = gather_system_info(repo_root, command)
     run_id = system_info.run_id.strftime("%Y-%m-%dT%H-%M-%S")
 
-    # Prepare output directories: results/<draft>/<run_id>/{system.json, events.jsonl, jobs/}
+    # Prepare output directories: results/<draft>/<run_id>/{system.json, events.jsonl, jobs.jsonl}
     run_dir = results_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    jobs_dir = run_dir / "jobs"
-    jobs_dir.mkdir(exist_ok=True)
     events_file = run_dir / "events.jsonl"
+    jobs_file = run_dir / "jobs.jsonl"
 
-    # Initialize events file
+    # Initialize output files
     events_file.write_text("")
+    jobs_file.write_text("")
 
     # Write system information
     system_file = run_dir / "system.json"
@@ -762,10 +759,42 @@ def main(
     total_jobs = len(all_jobs)
     logger.info(f"Collected {total_jobs} jobs to run")
 
-    # Create worker function with fixed arguments
-    def worker(job_adapter: tuple[Job, Path]) -> tuple[CorrectnessResult, BenchmarkResult | None]:
+    # Per-worker output capture: each thread writes to its own output-{N}.jsonl
+    _worker_local = threading.local()
+    _worker_id_lock = threading.Lock()
+    _worker_id_seq = [0]
+    _worker_fhs: list = []  # track file handles for cleanup
+
+    def worker(job_adapter: tuple[Job, Path]) -> tuple[CorrectnessResult, BenchmarkResult | None, JobRecord | None]:
         job, adapter = job_adapter
-        return run_single_job(job, adapter, jobs_dir, skip_speed, warmup, runs)
+        correctness, benchmark, job_record, stdout, stderr = run_single_job(
+            job, adapter, skip_speed, warmup, runs
+        )
+
+        # Write captured output to per-worker JSONL (no contention)
+        if stdout or stderr:
+            if not hasattr(_worker_local, "fh"):
+                with _worker_id_lock:
+                    wid = _worker_id_seq[0]
+                    _worker_id_seq[0] += 1
+                fh = open(run_dir / f"output-{wid}.jsonl", "w")
+                _worker_local.fh = fh
+                _worker_fhs.append(fh)
+            record = OutputRecord(
+                job_id=correctness.job_id,
+                tool=correctness.tool,
+                stdout=stdout or None,
+                stderr=stderr or None,
+            )
+            _worker_local.fh.write(
+                orjson.dumps(
+                    record.model_dump(mode="json", exclude_none=True),
+                    option=orjson.OPT_SORT_KEYS,
+                ).decode() + "\n"
+            )
+            _worker_local.fh.flush()
+
+        return (correctness, benchmark, job_record)
 
     # Run jobs and write results as they complete
     # Uses job_processor context manager to handle parallel/serial uniformly
@@ -774,7 +803,7 @@ def main(
     logger.info(f"{'='*60}")
 
     with job_processor(all_jobs, worker, parallelism) as results:
-        for correctness, benchmark in tqdm(results, total=total_jobs, desc="Jobs"):
+        for correctness, benchmark, job_record in tqdm(results, total=total_jobs, desc="Jobs"):
             # Write event immediately as each result arrives
             write_event(events_file, correctness)
 
@@ -783,8 +812,26 @@ def main(
                 if benchmark:
                     write_event(events_file, benchmark)
                     benchmarked += 1
+                if job_record:
+                    write_job(jobs_file, job_record)
             else:
                 mismatched += 1
+
+    # Close per-worker output files
+    for fh in _worker_fhs:
+        fh.close()
+
+    # Validate run output structure via dirschema
+    dirschema_spec_path = repo_root / "dirschema" / "run-output.yaml"
+    validate_result = subprocess.run(
+        ["dirschema", "validate", "--format", "json",
+         "--root", str(run_dir), dirschema_spec_path],
+        capture_output=True, text=True, timeout=10,
+    )
+    if validate_result.returncode == 0:
+        logger.info("dirschema: run output structure valid")
+    else:
+        logger.error(f"dirschema: run output structure INVALID: {validate_result.stdout}")
 
     # Summary
     logger.info("")

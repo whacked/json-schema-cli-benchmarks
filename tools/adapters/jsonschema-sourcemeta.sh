@@ -24,7 +24,7 @@ cmd_validate_schema() {
     local schema="$1"
     local exit_code
     # metaschema validates schema against its declared $schema
-    "$TOOL_BIN" metaschema "$schema" >/dev/null 2>&1 && exit_code=0 || exit_code=$?
+    "$TOOL_BIN" metaschema "$schema" && exit_code=0 || exit_code=$?
     case $exit_code in
         0) return 0 ;;  # VALID
         2) return 1 ;;  # INVALID (tool uses 2 for validation failure)
@@ -36,7 +36,7 @@ cmd_validate_instance() {
     local schema="$1"
     local instance="$2"
     local exit_code
-    "$TOOL_BIN" validate "$schema" "$instance" >/dev/null 2>&1 && exit_code=0 || exit_code=$?
+    "$TOOL_BIN" validate "$schema" "$instance" && exit_code=0 || exit_code=$?
     case $exit_code in
         0) return 0 ;;  # VALID
         2) return 1 ;;  # INVALID (tool uses 2 for validation failure)

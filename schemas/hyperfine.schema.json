@@ -1,0 +1,71 @@
+{
+  "properties": {
+    "results": {
+      "items": {
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "exit_codes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "max": {
+            "type": "number"
+          },
+          "mean": {
+            "type": "number"
+          },
+          "median": {
+            "type": "number"
+          },
+          "memory_usage_byte": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "min": {
+            "type": "number"
+          },
+          "stddev": {
+            "type": "number"
+          },
+          "system": {
+            "type": "number"
+          },
+          "times": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "user": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "command",
+          "mean",
+          "stddev",
+          "median",
+          "user",
+          "system",
+          "min",
+          "max",
+          "times",
+          "exit_codes"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "results"
+  ],
+  "title": "hyperfine output schema",
+  "type": "object"
+}

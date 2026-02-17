@@ -9,3 +9,5 @@ from .events import (
     Operation,
     Status,
 )
+from .jobs import JobRecord
+from .output import OutputRecord

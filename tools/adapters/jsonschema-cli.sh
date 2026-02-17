@@ -20,7 +20,7 @@ cmd_validate_schema() {
     local schema="$1"
     # Validates schema against its declared $schema (metaschema)
     # When called without an instance, jsonschema-cli validates the schema only
-    if "$TOOL_BIN" "$schema" >/dev/null 2>&1; then
+    if "$TOOL_BIN" "$schema"; then
         return 0  # VALID
     else
         return 1  # INVALID
@@ -30,7 +30,7 @@ cmd_validate_schema() {
 cmd_validate_instance() {
     local schema="$1"
     local instance="$2"
-    if "$TOOL_BIN" "$schema" -i "$instance" >/dev/null 2>&1; then
+    if "$TOOL_BIN" "$schema" -i "$instance"; then
         return 0  # VALID
     else
         return 1  # INVALID
@@ -39,7 +39,7 @@ cmd_validate_instance() {
 
 cmd_validate_instance_stdin() {
     local schema="$1"
-    if "$TOOL_BIN" "$schema" -i /dev/stdin >/dev/null 2>&1; then
+    if "$TOOL_BIN" "$schema" -i /dev/stdin; then
         return 0  # VALID
     else
         return 1  # INVALID

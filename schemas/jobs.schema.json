@@ -1,0 +1,64 @@
+{
+  "properties": {
+    "command": {
+      "type": "string"
+    },
+    "exit_codes": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "max": {
+      "type": "number"
+    },
+    "mean": {
+      "type": "number"
+    },
+    "median": {
+      "type": "number"
+    },
+    "memory_usage_byte": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "min": {
+      "type": "number"
+    },
+    "stddev": {
+      "type": "number"
+    },
+    "system": {
+      "type": "number"
+    },
+    "times": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    },
+    "user": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "command",
+    "mean",
+    "stddev",
+    "median",
+    "user",
+    "system",
+    "min",
+    "max",
+    "times",
+    "exit_codes",
+    "job_id"
+  ],
+  "title": "JobRecord",
+  "type": "object"
+}

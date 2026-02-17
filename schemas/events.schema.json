@@ -10,13 +10,6 @@
             "event": {
               "const": "benchmark_result"
             },
-            "hyperfine_json_path": {
-              "description": "Path to raw hyperfine JSON output",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
             "max_s": {
               "description": "Maximum execution time in seconds",
               "type": "number"
@@ -48,7 +41,8 @@
           ],
           "type": "object"
         }
-      ]
+      ],
+      "unevaluatedProperties": false
     },
     "CorrectnessResult": {
       "allOf": [
@@ -81,20 +75,6 @@
                 "ERROR"
               ],
               "type": "string"
-            },
-            "stderr_path": {
-              "description": "Path to captured stderr",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "stdout_path": {
-              "description": "Path to captured stdout",
-              "type": [
-                "string",
-                "null"
-              ]
             }
           },
           "required": [
@@ -105,7 +85,8 @@
           ],
           "type": "object"
         }
-      ]
+      ],
+      "unevaluatedProperties": false
     },
     "EventEnvelope": {
       "description": "Common fields for all events",
