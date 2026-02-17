@@ -28,6 +28,11 @@ We develop **inside Nix**:
 - All work is performed inside `nix-shell` (or an equivalent workflow using `shell.nix`).
 - **All dependency changes** must be made by editing `shell.nix`.
 
+The **single entry point** is the `justfile`:
+- Run `just --list` to discover all available recipes.
+- All workflows (codegen, experiment lifecycle, benchmarking, validation, analysis) are exposed as `just` recipes.
+- Do **not** add Makefiles, shell wrappers, or other entry points. Extend the `justfile` instead.
+
 Dependency policy:
 - New dependencies are allowed only if:
   - they exist in **nixpkgs**, OR
