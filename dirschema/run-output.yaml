@@ -1,0 +1,13 @@
+# dirschema spec for benchmark run output directories
+# Structure: results/<draft>/<run_id>/
+#   system.json       (required)
+#   events.jsonl      (required)
+#   jobs.jsonl        (required)
+#   output-N.jsonl    (optional, per-worker captured stdout/stderr)
+#
+# Usage:
+#   jsonnet dirschema/run-output.yaml | dirschema validate --root results/<draft>/<run_id> -
+- system.json
+- events.jsonl
+- jobs.jsonl
+- output-*.jsonl
