@@ -75,6 +75,7 @@ in pkgs.mkShell {
     pkgs.just
     pkgs.nodejs
     pkgs.yq-go
+    pkgs.zstd
     (python.withPackages (ps: [
       jsf
       ps.datamodel-code-generator
@@ -93,6 +94,7 @@ in pkgs.mkShell {
   ];
 
   shellHook = nix_shortcuts.shellHook + ''
+    just
   '' + ''
     echo-shortcuts ${__curPos.file}
   '';  # join strings with +

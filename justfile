@@ -3,13 +3,12 @@
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-repo_root := justfile_directory()
-experiments_dir := repo_root / "experiments"
-results_dir := repo_root / "results"
-bench_dir := repo_root / "bench"
-tools_dir := repo_root / "tools"
-schemas_dir := repo_root / "schemas"
-dirschema_dir := repo_root / "dirschema"
+experiments_dir := "experiments"
+results_dir := "results"
+bench_dir := "bench"
+tools_dir := "tools"
+schemas_dir := "schemas"
+dirschema_dir := "dirschema"
 
 [private]
 default:
@@ -172,31 +171,68 @@ run draft *args: (_check-manifest draft) (_check-schema draft) (_check-hydrated 
 run-correctness draft *args: (_check-manifest draft) (_check-schema draft) (_check-hydrated draft)
     python3 "{{ bench_dir }}/run.py" "{{ draft }}" --skip-speed {{ args }}
 
-# ─── Validation ──────────────────────────────────────────────
+# ─── Validation (atomic) ─────────────────────────────────────
 
-# Validate experiment manifest + directory structure
+# Validate manifest against JSON Schema
 [group('validate')]
-validate-experiment draft: (_check-manifest draft)
+validate-manifest draft: (_check-manifest draft)
     #!/usr/bin/env bash
-    echo "=== Manifest schema ==="
+    t0=$EPOCHREALTIME
     manifest_json=$(just _manifest-as-json "{{ draft }}")
-    printf '%s' "$manifest_json" | jsonschema-cli schemas/manifest.schema.json -i /dev/stdin
-    echo "PASS manifest"
+    if printf '%s' "$manifest_json" | jsonschema-cli schemas/manifest.schema.json -i /dev/stdin >/dev/null 2>&1; then
+        printf 'PASS {{ draft }} manifest (%ss)\n' "$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")"
+    else
+        printf 'FAIL {{ draft }} manifest (%ss)\n' "$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")"
+        printf '%s' "$manifest_json" | jsonschema-cli schemas/manifest.schema.json -i /dev/stdin 2>&1 || true
+        exit 1
+    fi
 
-    echo "=== Directory structure ==="
-    jsonnet --ext-code "manifest=${manifest_json}" "{{ dirschema_dir }}/experiment-cases.jsonnet" \
-        | dirschema validate --root "{{ experiments_dir }}/{{ draft }}" -
-    echo "PASS dirschema"
-
-# Validate run output directory + all data files
+# Validate experiment directory structure (dirschema/experiment-cases.jsonnet)
 [group('validate')]
-validate-run dir:
+validate-experiment-structure draft: (_check-manifest draft)
     #!/usr/bin/env bash
-    echo "=== Directory structure ==="
-    dirschema validate --root "{{ dir }}" "{{ dirschema_dir }}/run-output.yaml"
-    echo "PASS dirschema"
+    t0=$EPOCHREALTIME
+    manifest_json=$(just _manifest-as-json "{{ draft }}")
+    spec=$(jsonnet --ext-code "manifest=${manifest_json}" "{{ dirschema_dir }}/experiment-cases.jsonnet")
+    result=$(printf '%s' "$spec" | dirschema validate --format json --root "{{ experiments_dir }}/{{ draft }}" - 2>&1) \
+        && ds_ok=true || ds_ok=false
+    dt=$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")
+    if $ds_ok; then
+        echo "PASS {{ draft }} experiment structure (dirschema/experiment-cases.jsonnet) (${dt}s)"
+    else
+        echo "FAIL {{ draft }} experiment structure (dirschema/experiment-cases.jsonnet) (${dt}s)"
+        if printf '%s' "$result" | jq -e '.errors' >/dev/null 2>&1; then
+            printf '%s' "$result" | jq -r '.errors[] | "  missing: \(.path // .message)"'
+        else
+            printf '%s\n' "$result"
+        fi
+        exit 1
+    fi
 
-    echo "=== Content validation ==="
+# Validate run output directory structure (dirschema/run-output.yaml)
+[group('validate')]
+validate-run-structure dir:
+    #!/usr/bin/env bash
+    t0=$EPOCHREALTIME
+    result=$(dirschema validate --format json --root "{{ dir }}" "{{ dirschema_dir }}/run-output.yaml" 2>&1) \
+        && ds_ok=true || ds_ok=false
+    dt=$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")
+    if $ds_ok; then
+        echo "PASS {{ dir }} run structure (dirschema/run-output.yaml) (${dt}s)"
+    else
+        echo "FAIL {{ dir }} run structure (dirschema/run-output.yaml) (${dt}s)"
+        if printf '%s' "$result" | jq -e '.errors' >/dev/null 2>&1; then
+            printf '%s' "$result" | jq -r '.errors[] | "  missing: \(.path // .message)"'
+        else
+            printf '%s\n' "$result"
+        fi
+        exit 1
+    fi
+
+# Validate run output file contents against JSON Schemas
+[group('validate')]
+validate-run-content dir:
+    #!/usr/bin/env bash
     just _validate-json schemas/system.schema.json "{{ dir }}/system.json"
 
     [[ -f "{{ dir }}/events.jsonl" ]] && \
@@ -210,31 +246,54 @@ validate-run dir:
         just _validate-jsonl schemas/output.schema.json "$f"
     done
 
+# ─── Validation (composite) ─────────────────────────────────
+
+# Validate experiment manifest + directory structure
+[group('validate')]
+validate-experiment draft: (validate-manifest draft) (validate-experiment-structure draft)
+
+# Validate run output directory structure + all data files
+[group('validate')]
+validate-run dir: (validate-run-structure dir) (validate-run-content dir)
+
+# Validate all run output directories
+[group('validate')]
+validate-runs:
+    #!/usr/bin/env bash
+    for r in "{{ results_dir }}"/*/*/; do
+        [[ -d "$r" ]] || continue
+        echo "=== $r ==="
+        just validate-run "$r" || true
+    done
+
 # Validate everything (all experiments + all results)
 [group('validate')]
 validate-all:
     #!/usr/bin/env bash
     passes=0; failures=0
+
     for d in "{{ experiments_dir }}"/*/; do
         [[ -d "$d" ]] || continue
         draft=$(basename "$d")
-        echo "=== Experiment: $draft ==="
-        if just validate-experiment "$draft"; then
+        # skip dirs without a manifest
+        [[ -f "$d/manifest.json" || -f "$d/manifest.yaml" ]] || continue
+        if just validate-experiment "$draft" 2>&1; then
             passes=$((passes + 1))
         else
             failures=$((failures + 1))
         fi
     done
+
     for r in "{{ results_dir }}"/*/*/; do
         [[ -d "$r" ]] || continue
-        echo "=== Run: $r ==="
-        if just validate-run "$r"; then
+        if just validate-run "$r" 2>&1; then
             passes=$((passes + 1))
         else
             failures=$((failures + 1))
         fi
     done
-    printf '\n=== Summary: %d passed, %d failed ===\n' "$passes" "$failures"
+
+    printf '\n\033[1m=== Summary: %d passed, %d failed ===\033[0m\n' "$passes" "$failures"
     [[ $failures -eq 0 ]]
 
 # ─── Info & discovery ────────────────────────────────────────
@@ -306,6 +365,81 @@ list-cases draft: (_check-manifest draft)
 serve *args:
     cd analysis && python3 -m http.server {{ args }}
 
+# ─── Releases ────────────────────────────────────────────────
+
+# Bundle results/ into results-YYYY-MM-DD.N.tar.zst
+[group('releases')]
+bundle:
+    #!/usr/bin/env bash
+    [[ -d "{{ results_dir }}" ]] || { echo "No results/ directory"; exit 1; }
+    date=$(date +%Y-%m-%d)
+    n=1
+    while [[ -f "results-${date}.${n}.tar.zst" ]]; do
+        n=$((n + 1))
+    done
+    name="results-${date}.${n}.tar.zst"
+    tar cf - results/ | zstd -q -o "$name"
+    size=$(du -h "$name" | cut -f1)
+    echo "Created: $name ($size)"
+
+# List available result bundles on GitHub
+[group('releases')]
+list-releases:
+    #!/usr/bin/env bash
+    repo=$(git remote get-url origin | sed 's|.*github.com[:/]||; s|\.git$||')
+    releases=$(curl -sf "https://api.github.com/repos/${repo}/releases" \
+        | jq -r '.[] | select(.assets | length > 0) | {tag: .tag_name, date: .published_at, assets: [.assets[] | {name, size}]}')
+    if [[ -z "$releases" || "$releases" == "null" ]]; then
+        echo "No releases with assets found."
+        echo "  https://github.com/${repo}/releases"
+        exit 0
+    fi
+    printf '%-28s  %-10s  %s\n' "TAG" "DATE" "ASSET"
+    printf '%-28s  %-10s  %s\n' "---" "----" "-----"
+    echo "$releases" | jq -r '
+        .date[:10] as $date |
+        .assets[] |
+        [.name, (.size / 1048576 * 10 | floor / 10 | tostring + " MB")] as [$name, $size] |
+        "\(.tag)  \($date)  \($name) (\($size))"
+    ' | while IFS= read -r line; do
+        tag=$(echo "$line" | cut -d' ' -f1)
+        rest=$(echo "$line" | cut -d' ' -f3-)
+        date=$(echo "$line" | cut -d' ' -f2)
+        printf '%-28s  %-10s  %s\n' "$tag" "$date" "$rest"
+    done
+
+# Download a result bundle from GitHub
+[group('releases')]
+download-release tag:
+    #!/usr/bin/env bash
+    repo=$(git remote get-url origin | sed 's|.*github.com[:/]||; s|\.git$||')
+    release=$(curl -sf "https://api.github.com/repos/${repo}/releases/tags/{{ tag }}")
+    if [[ -z "$release" || "$release" == "null" ]]; then
+        echo "Release '{{ tag }}' not found."
+        echo "Run 'just list-releases' to see available releases."
+        exit 1
+    fi
+    # Find the .tar.zst asset
+    asset_url=$(printf '%s' "$release" | jq -r '.assets[] | select(.name | endswith(".tar.zst")) | .browser_download_url' | head -1)
+    asset_name=$(printf '%s' "$release" | jq -r '.assets[] | select(.name | endswith(".tar.zst")) | .name' | head -1)
+    if [[ -z "$asset_url" || "$asset_url" == "null" ]]; then
+        echo "No .tar.zst asset in release '{{ tag }}'."
+        # Show what assets are available
+        printf '%s' "$release" | jq -r '.assets[] | "  \(.name) (\(.size / 1048576 * 10 | floor / 10) MB)"'
+        exit 1
+    fi
+    if [[ -f "$asset_name" ]]; then
+        echo "Already downloaded: $asset_name"
+    else
+        echo "Downloading: $asset_name"
+        curl -L --progress-bar -o "$asset_name" "$asset_url"
+    fi
+    size=$(du -h "$asset_name" | cut -f1)
+    echo "Ready: $asset_name ($size)"
+    echo ""
+    echo "Extract with:"
+    echo "  zstd -dc $asset_name | tar xf -"
+
 # ─── Cleanup ─────────────────────────────────────────────────
 
 # Remove all results for a draft
@@ -358,26 +492,33 @@ _manifest-as-json draft:
 [private]
 _validate-json schema file:
     #!/usr/bin/env bash
+    t0=$EPOCHREALTIME
+    base=$(basename "{{ file }}")
     if jsonschema-cli "{{ schema }}" -i <(cat "{{ file }}" | yq -o j) >/dev/null 2>&1; then
-        echo "PASS $(basename "{{ file }}")"
+        printf 'PASS %s (%ss)\n' "$base" "$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")"
     else
-        echo "FAIL $(basename "{{ file }}")"
+        printf 'FAIL %s (%ss)\n' "$base" "$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")"
         exit 1
     fi
 
 [private]
 _validate-jsonl schema file:
     #!/usr/bin/env bash
+    t0=$EPOCHREALTIME
     total=$(wc -l < "{{ file }}" | tr -d ' ')
+    base=$(basename "{{ file }}")
+    printf '  .. %s (%d records)\r' "$base" "$total" >&2
     jobs=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
     errs=$(< "{{ file }}" tr '\n' '\0' \
         | xargs -0 -n1 -P "$jobs" sh -c \
             'printf "%s" "$2" | jsonschema-cli "$1" -i /dev/stdin >/dev/null 2>&1 || echo x' \
             _ "{{ schema }}" \
         | wc -l | tr -d ' ')
+    printf '\033[2K\r' >&2
+    dt=$(awk "BEGIN{printf \"%.1f\", $EPOCHREALTIME - $t0}")
     if [[ "$errs" -eq 0 ]]; then
-        echo "PASS $(basename "{{ file }}") ($total records)"
+        echo "PASS $base ($total records, ${dt}s)"
     else
-        echo "FAIL $(basename "{{ file }}") ($errs/$total failed)"
+        echo "FAIL $base ($errs/$total failed, ${dt}s)"
         exit 1
     fi
