@@ -85,8 +85,16 @@ This repository commits **everything** needed to reproduce results:
 - schemas
 - instance data
 - benchmark scripts
-- raw and processed benchmark outputs
+- benchmark outputs (raw and processed)
 - rendered reports
+
+Benchmark output structure (`results/<draft>/<run_id>/`):
+- `events.jsonl` — correctness and benchmark result events
+- `jobs.jsonl` — raw timing data from hyperfine (individual `times[]`, `exit_codes[]`, `memory_usage_byte[]` per job)
+- `output-N.jsonl` — tool stdout/stderr captured per worker
+- `system.json` — machine/environment snapshot
+
+Per-job artifact directories were eliminated in favor of flat JSONL to reduce storage (~10x). Raw timing arrays in `jobs.jsonl` preserve all data that was previously in separate hyperfine JSON files.
 
 Formatting rules for stability:
 - JSON files must be **prettified** and deterministic.
@@ -100,7 +108,9 @@ Formatting rules for stability:
 
 ## 5) Benchmark execution
 
-- Use **pure shell** harnessing (e.g. `hyperfine`) unless a stronger reason exists.
+- The benchmark runner is `bench/run.py` (Python), which orchestrates `hyperfine` for timing.
+  Python was chosen over pure shell for type safety (Pydantic models), manifest validation, and structured event output.
+  Hyperfine remains the timing backend.
 - Bench harnesses must:
   - emit machine-readable output (e.g. JSON),
   - record tool identity and version,
