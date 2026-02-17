@@ -1,6 +1,6 @@
 # Manifest-Driven JSON Schema Validator Benchmark
 
-**Execution Design & Requirements (Clarified Version)**
+**Execution Design & Requirements**
 
 > **Purpose**
 > Provide a precise, unambiguous specification for implementing a manifest-driven benchmark harness for JSON Schema validators.
@@ -17,8 +17,6 @@ The system benchmarks JSON Schema validator tools across drafts by executing **t
 
 2. **Instance validation**
    “Does this JSON instance validate against this schema?”
-
-These are **distinct operations**, with different applicability rules and different expected outcomes.
 
 ---
 
@@ -258,27 +256,30 @@ The runner:
 ### 9.1 Location
 
 ```
-results/<draft>/events.jsonl
+results/<draft>/<run_id>/events.jsonl
 ```
 
-Append-only.
+Each benchmark run produces a timestamped output directory. Append-only within a run.
 
 ---
 
 ### 9.2 Event Envelope (All Events)
 
-| Field          | Meaning                        |
-| -------------- | ------------------------------ |
-| `event`        | Event type discriminator       |
-| `ts`           | ISO-8601 timestamp             |
-| `draft`        | Draft identifier               |
-| `tool`         | Tool name                      |
-| `tool_version` | Observed tool version          |
-| `case_id`      | Case identifier                |
-| `operation`    | `schema` / `instance`          |
-| `mode`         | `file` / `stdin`               |
-| `job_id`       | Stable job hash                |
-| `status`       | `ok` / `unsupported` / `error` |
+| Field            | Meaning                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| `event`          | Event type discriminator                                   |
+| `ts`             | ISO-8601 timestamp                                         |
+| `draft`          | Draft identifier                                           |
+| `tool`           | Tool name                                                  |
+| `tool_version`   | Observed tool version                                      |
+| `case_id`        | Case identifier                                            |
+| `operation`      | `schema` / `instance`                                      |
+| `mode`           | `file` / `stdin`                                           |
+| `job_id`         | Stable job hash                                            |
+| `status`         | `ok` / `unsupported` / `error`                             |
+| `schema_bytes`   | Size of schema file in bytes                               |
+| `input_id`       | Relative path of instance file (instance operations only)  |
+| `instance_bytes` | Size of instance file in bytes (null for schema-only ops)  |
 
 ---
 
@@ -288,12 +289,12 @@ Append-only.
 
 Additional fields:
 
-* `exit_code`
+* `exit_code` — raw exit code from adapter
 * `outcome` (`VALID`, `INVALID`, `UNSUPPORTED`, `ERROR`)
-* `expected`
-* `match`
-* `stdout_path`
-* `stderr_path`
+* `expected` — expected validity from manifest
+* `match` — did outcome match expected?
+
+Tool stdout/stderr is captured in per-worker `output-N.jsonl` files (see §10), not inline in events.
 
 **Important semantic rule:**
 
@@ -319,50 +320,47 @@ Additional fields:
 * `min_s`
 * `max_s`
 * `runs`
-* `hyperfine_json_path`
+
+Raw timing data (individual run times, exit codes, memory usage) is preserved in `jobs.jsonl` (see §10).
 
 ---
 
-## 10. Artifacts
+## 10. Run Output Directory
 
-Per job:
+Each benchmark run produces a directory:
 
 ```
-results/<draft>/runs/<job_id>/
-├── stdout.txt
-├── stderr.txt
-└── hyperfine.json
+results/<draft>/<run_id>/
+├── system.json       # Machine/environment info (hostname, CPU, OS, tool versions)
+├── events.jsonl      # Event log (correctness_result + benchmark_result records)
+├── jobs.jsonl        # Consolidated hyperfine timing data (one record per benchmarked job)
+└── output-N.jsonl    # Per-worker tool stdout/stderr capture (one file per parallel worker)
 ```
 
-Artifacts are referenced by events and exist for debugging and reproducibility.
+### File descriptions
+
+| File | Contents |
+| ---- | -------- |
+| `system.json` | Machine identity and environment snapshot for reproducibility |
+| `events.jsonl` | Append-only event log as described in §9 |
+| `jobs.jsonl` | Raw hyperfine data: individual `times[]`, `exit_codes[]`, `memory_usage_byte[]` per benchmarked job. One JSONL record per job. |
+| `output-N.jsonl` | Tool stdout/stderr captured during correctness checks, partitioned by worker process |
+
+Structure is validated by `dirschema/run-output.yaml`.
+
+**Design note:** Per-job artifact directories (`runs/<job_id>/stdout.txt`, etc.) were replaced by flat JSONL files to reduce storage overhead (~10x reduction). The raw timing arrays in `jobs.jsonl` preserve all data that was previously in separate hyperfine JSON files.
 
 ---
 
-## 11. Post-Processing: Events → Rows
+## 11. Post-Processing & Analysis
 
-### Purpose
+### Primary analysis surface
 
-Produce a 2-D, analysis-ready dataset.
+`events.jsonl` is the primary analysis surface. It contains both correctness and benchmark results in a single file, joined by `job_id`.
 
-### Input
+### Analysis scripts
 
-* `events.jsonl`
-* `manifest.json` (for metadata joins)
-
-### Logic
-
-* Group by `job_id`
-* Require one correctness event
-* Attach benchmark data only if `match == true`
-* Join `meta` by `(draft, case_id)`
-
-### Output
-
-```
-results/<draft>/rows.jsonl
-```
-
-The row schema may evolve independently of the runner.
+Scripts in `analysis/` consume `events.jsonl` directly for comparison, visualization, and reporting.
 
 ---
 
@@ -372,7 +370,6 @@ The row schema may evolve independently of the runner.
 
 * `schemas/manifest.schema.json`
 * `schemas/events.schema.json`
-* (optional) `schemas/rows.schema.json`
 
 ### Usage
 
@@ -387,15 +384,14 @@ The row schema may evolve independently of the runner.
 1. Human edits `manifest.json`
 2. Runner validates manifest + directory layout
 3. Jobs are generated deterministically
-4. Runner executes jobs
-5. Events + artifacts are recorded
-6. Post-processor derives rows
-7. Reporting consumes rows
+4. Runner executes jobs (correctness → benchmark for passing jobs)
+5. Events are recorded to `events.jsonl`, timing data to `jobs.jsonl`, tool output to `output-N.jsonl`
+6. Analysis scripts in `analysis/` consume `events.jsonl` for comparison and reporting
 
 ---
 
 ## Final Note
 
 Two expectations (`schema_valid`, `instance_valid`) are canonical **because there are exactly two primitive correctness questions the system asks**.
-They are not symmetric, not always applicable, and not always populated — and that asymmetry is **intentional and enforced**.
+They are not symmetric, not always applicable, and not always populated.
 
