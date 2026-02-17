@@ -281,8 +281,6 @@ Requires dirschema >= 20260125.3.
 | Create | `bench/run.py` | Unified Python runner |
 | Modify | `dirschema/manifest.template.jsonnet` | Remove meta_schema |
 | Modify | `experiments/draft-07/manifest.json` | Remove meta_schema |
-| Delete | `bench/run_correctness.sh` | Replaced by run.py |
-| Delete | `bench/run_speed.sh` | Replaced by run.py |
 | Modify | `Makefile` | Update targets for new runner |
 
 ---
