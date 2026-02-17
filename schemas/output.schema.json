@@ -1,0 +1,28 @@
+{
+  "additionalProperties": false,
+  "description": "Captured stdout/stderr from a single correctness check",
+  "properties": {
+    "job_id": {
+      "description": "Stable job hash (sha256 of canonical job dimensions)",
+      "type": "string"
+    },
+    "stderr": {
+      "description": "Captured stderr from adapter (omitted when empty)",
+      "type": "string"
+    },
+    "stdout": {
+      "description": "Captured stdout from adapter (omitted when empty)",
+      "type": "string"
+    },
+    "tool": {
+      "description": "Tool adapter name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_id",
+    "tool"
+  ],
+  "title": "OutputRecord",
+  "type": "object"
+}

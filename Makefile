@@ -216,6 +216,13 @@ status-experiment: _check-draft
 debug-experiment: _check-draft
 	@$(TOOLS_DIR)/experiment-manager.bb.clj debug $(DRAFT)
 
+## validate-run RUN_DIR=...    Validate run output directory structure
+validate-run:
+ifndef RUN_DIR
+	$(error RUN_DIR required. Example: make validate-run RUN_DIR=results/draft-05/2026-02-13T02-01-42)
+endif
+	@jsonnet dirschema/run-output.jsonnet | dirschema validate --root $(RUN_DIR) -
+
 # -----------------------------------------------------------------------------
 # Code generation (jsonnet -> JSON Schema -> Pydantic)
 # -----------------------------------------------------------------------------
@@ -235,6 +242,15 @@ debug-experiment: _check-draft
 ./schemas/system.schema.json: ./generators/system.schema.jsonnet
 	jsonnet $< | jq -S > $@
 
+./schemas/hyperfine.schema.json: ./generators/hyperfine.schema.jsonnet
+	jsonnet $< | jq -S | tee $@
+
+./schemas/jobs.schema.json: ./generators/jobs.schema.jsonnet ./generators/hyperfine.schema.jsonnet
+	jsonnet $< | jq -S > $@
+
+./schemas/output.schema.json: ./generators/output.schema.jsonnet
+	jsonnet $< | jq -S > $@
+
 ./src/models/manifest.py: ./schemas/manifest.schema.json
 	@mkdir -p src/models
 	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
@@ -247,8 +263,17 @@ debug-experiment: _check-draft
 	@mkdir -p src/models
 	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
 
+./src/models/jobs.py: ./schemas/jobs.schema.json
+	@mkdir -p src/models
+	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
+
+./src/models/output.py: ./schemas/output.schema.json
+	@mkdir -p src/models
+	datamodel-codegen --input $< --input-file-type jsonschema --output-model-type pydantic_v2.BaseModel --output $@
+
 ## schemas                    Generate JSON Schemas from jsonnet
-schemas: ./schemas/manifest.schema.json ./schemas/events.schema.json ./schemas/system.schema.json
+schemas: ./schemas/manifest.schema.json ./schemas/events.schema.json ./schemas/system.schema.json ./schemas/hyperfine.schema.json ./schemas/jobs.schema.json ./schemas/output.schema.json
 
 ## models                     Generate Pydantic models from schemas
-models: ./src/models/manifest.py ./src/models/events.py ./src/models/system.py
+models: ./src/models/manifest.py ./src/models/events.py ./src/models/system.py ./src/models/jobs.py ./src/models/output.py
+

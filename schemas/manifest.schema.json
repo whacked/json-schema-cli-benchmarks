@@ -52,6 +52,7 @@
       "description": "JSON Schema draft identifier",
       "enum": [
         "draft-04",
+        "draft-05",
         "draft-06",
         "draft-07",
         "draft-2019-09",
