@@ -387,26 +387,17 @@ bundle:
 list-releases:
     #!/usr/bin/env bash
     repo=$(git remote get-url origin | sed 's|.*github.com[:/]||; s|\.git$||')
-    releases=$(curl -sf "https://api.github.com/repos/${repo}/releases" \
-        | jq -r '.[] | select(.assets | length > 0) | {tag: .tag_name, date: .published_at, assets: [.assets[] | {name, size}]}')
-    if [[ -z "$releases" || "$releases" == "null" ]]; then
-        echo "No releases with assets found."
-        echo "  https://github.com/${repo}/releases"
-        exit 0
-    fi
-    printf '%-28s  %-10s  %s\n' "TAG" "DATE" "ASSET"
-    printf '%-28s  %-10s  %s\n' "---" "----" "-----"
-    echo "$releases" | jq -r '
-        .date[:10] as $date |
-        .assets[] |
-        [.name, (.size / 1048576 * 10 | floor / 10 | tostring + " MB")] as [$name, $size] |
-        "\(.tag)  \($date)  \($name) (\($size))"
-    ' | while IFS= read -r line; do
-        tag=$(echo "$line" | cut -d' ' -f1)
-        rest=$(echo "$line" | cut -d' ' -f3-)
-        date=$(echo "$line" | cut -d' ' -f2)
-        printf '%-28s  %-10s  %s\n' "$tag" "$date" "$rest"
-    done
+    curl -sf "https://api.github.com/repos/${repo}/releases" \
+        | jq -r '
+            (["TAG", "DATE", "ASSET"] | @tsv),
+            (.[] | select(.assets | length > 0) |
+                .tag_name as $tag |
+                .published_at[:10] as $date |
+                .assets[] |
+                [$tag, $date, "\(.name) (\(.size / 1048576 * 10 | floor / 10) MB)"] | @tsv
+            )
+        ' | column -t -s $'\t' \
+        || echo "No releases with assets found."
 
 # Download a result bundle from GitHub
 [group('releases')]
@@ -439,6 +430,46 @@ download-release tag:
     echo ""
     echo "Extract with:"
     echo "  zstd -dc $asset_name | tar xf -"
+
+# Create a GitHub release with result bundle attached
+[group('releases')]
+release tag:
+    #!/usr/bin/env bash
+    # Validate tag format
+    if [[ ! "{{ tag }}" =~ ^v[0-9] ]]; then
+        echo "Tag should start with v (e.g. v0.1.0). Got: {{ tag }}"
+        exit 1
+    fi
+    # Ensure clean working tree
+    if [[ -n "$(git status --porcelain)" ]]; then
+        echo "Working tree is dirty. Commit or stash changes first."
+        exit 1
+    fi
+    # Bundle results
+    just bundle
+    bundle=$(ls -t results-*.tar.zst | head -1)
+    # Draft release notes from git log
+    prev_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+    if [[ -n "$prev_tag" ]]; then
+        range="${prev_tag}..HEAD"
+    else
+        range="HEAD"
+    fi
+    notes=$(git log --pretty=format:'- %s' "$range" | head -50)
+    echo ""
+    echo "=== Release {{ tag }} ==="
+    echo "Bundle: $bundle"
+    echo "Notes preview:"
+    echo "$notes"
+    echo ""
+    read -rp "Proceed? [y/N] " confirm
+    [[ "$confirm" =~ ^[yY]$ ]] || { echo "Aborted."; exit 1; }
+    git tag "{{ tag }}"
+    git push origin main --tags
+    gh release create "{{ tag }}" "$bundle" \
+        --title "{{ tag }}" \
+        --notes "$notes"
+    echo "Released: {{ tag }}"
 
 # ─── Cleanup ─────────────────────────────────────────────────
 
