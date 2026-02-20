@@ -137,4 +137,4 @@ Reproducibility — "latest" changes over time. Adding tools doesn't change expe
 
 ## License
 
-TBD
+[WTFPL](https://www.wtfpl.net/)
