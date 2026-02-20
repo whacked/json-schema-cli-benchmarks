@@ -569,7 +569,7 @@ def run_benchmark(
             max=bench["max"],
             times=bench["times"],
             exit_codes=bench["exit_codes"],
-            memory_usage_byte=bench["memory_usage_byte"],
+            memory_usage_byte=bench.get("memory_usage_byte"),
             job_id=job.job_id,
         )
 
