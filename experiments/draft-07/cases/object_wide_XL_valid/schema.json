@@ -1,0 +1,1673 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "k0000": {
+      "type": "integer"
+    },
+    "k0001": {
+      "type": "integer"
+    },
+    "k0002": {
+      "type": "integer"
+    },
+    "k0003": {
+      "type": "integer"
+    },
+    "k0004": {
+      "type": "integer"
+    },
+    "k0005": {
+      "type": "integer"
+    },
+    "k0006": {
+      "type": "integer"
+    },
+    "k0007": {
+      "type": "integer"
+    },
+    "k0008": {
+      "type": "integer"
+    },
+    "k0009": {
+      "type": "integer"
+    },
+    "k0010": {
+      "type": "integer"
+    },
+    "k0011": {
+      "type": "integer"
+    },
+    "k0012": {
+      "type": "integer"
+    },
+    "k0013": {
+      "type": "integer"
+    },
+    "k0014": {
+      "type": "integer"
+    },
+    "k0015": {
+      "type": "integer"
+    },
+    "k0016": {
+      "type": "integer"
+    },
+    "k0017": {
+      "type": "integer"
+    },
+    "k0018": {
+      "type": "integer"
+    },
+    "k0019": {
+      "type": "integer"
+    },
+    "k0020": {
+      "type": "integer"
+    },
+    "k0021": {
+      "type": "integer"
+    },
+    "k0022": {
+      "type": "integer"
+    },
+    "k0023": {
+      "type": "integer"
+    },
+    "k0024": {
+      "type": "integer"
+    },
+    "k0025": {
+      "type": "integer"
+    },
+    "k0026": {
+      "type": "integer"
+    },
+    "k0027": {
+      "type": "integer"
+    },
+    "k0028": {
+      "type": "integer"
+    },
+    "k0029": {
+      "type": "integer"
+    },
+    "k0030": {
+      "type": "integer"
+    },
+    "k0031": {
+      "type": "integer"
+    },
+    "k0032": {
+      "type": "integer"
+    },
+    "k0033": {
+      "type": "integer"
+    },
+    "k0034": {
+      "type": "integer"
+    },
+    "k0035": {
+      "type": "integer"
+    },
+    "k0036": {
+      "type": "integer"
+    },
+    "k0037": {
+      "type": "integer"
+    },
+    "k0038": {
+      "type": "integer"
+    },
+    "k0039": {
+      "type": "integer"
+    },
+    "k0040": {
+      "type": "integer"
+    },
+    "k0041": {
+      "type": "integer"
+    },
+    "k0042": {
+      "type": "integer"
+    },
+    "k0043": {
+      "type": "integer"
+    },
+    "k0044": {
+      "type": "integer"
+    },
+    "k0045": {
+      "type": "integer"
+    },
+    "k0046": {
+      "type": "integer"
+    },
+    "k0047": {
+      "type": "integer"
+    },
+    "k0048": {
+      "type": "integer"
+    },
+    "k0049": {
+      "type": "integer"
+    },
+    "k0050": {
+      "type": "integer"
+    },
+    "k0051": {
+      "type": "integer"
+    },
+    "k0052": {
+      "type": "integer"
+    },
+    "k0053": {
+      "type": "integer"
+    },
+    "k0054": {
+      "type": "integer"
+    },
+    "k0055": {
+      "type": "integer"
+    },
+    "k0056": {
+      "type": "integer"
+    },
+    "k0057": {
+      "type": "integer"
+    },
+    "k0058": {
+      "type": "integer"
+    },
+    "k0059": {
+      "type": "integer"
+    },
+    "k0060": {
+      "type": "integer"
+    },
+    "k0061": {
+      "type": "integer"
+    },
+    "k0062": {
+      "type": "integer"
+    },
+    "k0063": {
+      "type": "integer"
+    },
+    "k0064": {
+      "type": "integer"
+    },
+    "k0065": {
+      "type": "integer"
+    },
+    "k0066": {
+      "type": "integer"
+    },
+    "k0067": {
+      "type": "integer"
+    },
+    "k0068": {
+      "type": "integer"
+    },
+    "k0069": {
+      "type": "integer"
+    },
+    "k0070": {
+      "type": "integer"
+    },
+    "k0071": {
+      "type": "integer"
+    },
+    "k0072": {
+      "type": "integer"
+    },
+    "k0073": {
+      "type": "integer"
+    },
+    "k0074": {
+      "type": "integer"
+    },
+    "k0075": {
+      "type": "integer"
+    },
+    "k0076": {
+      "type": "integer"
+    },
+    "k0077": {
+      "type": "integer"
+    },
+    "k0078": {
+      "type": "integer"
+    },
+    "k0079": {
+      "type": "integer"
+    },
+    "k0080": {
+      "type": "integer"
+    },
+    "k0081": {
+      "type": "integer"
+    },
+    "k0082": {
+      "type": "integer"
+    },
+    "k0083": {
+      "type": "integer"
+    },
+    "k0084": {
+      "type": "integer"
+    },
+    "k0085": {
+      "type": "integer"
+    },
+    "k0086": {
+      "type": "integer"
+    },
+    "k0087": {
+      "type": "integer"
+    },
+    "k0088": {
+      "type": "integer"
+    },
+    "k0089": {
+      "type": "integer"
+    },
+    "k0090": {
+      "type": "integer"
+    },
+    "k0091": {
+      "type": "integer"
+    },
+    "k0092": {
+      "type": "integer"
+    },
+    "k0093": {
+      "type": "integer"
+    },
+    "k0094": {
+      "type": "integer"
+    },
+    "k0095": {
+      "type": "integer"
+    },
+    "k0096": {
+      "type": "integer"
+    },
+    "k0097": {
+      "type": "integer"
+    },
+    "k0098": {
+      "type": "integer"
+    },
+    "k0099": {
+      "type": "integer"
+    },
+    "k0100": {
+      "type": "integer"
+    },
+    "k0101": {
+      "type": "integer"
+    },
+    "k0102": {
+      "type": "integer"
+    },
+    "k0103": {
+      "type": "integer"
+    },
+    "k0104": {
+      "type": "integer"
+    },
+    "k0105": {
+      "type": "integer"
+    },
+    "k0106": {
+      "type": "integer"
+    },
+    "k0107": {
+      "type": "integer"
+    },
+    "k0108": {
+      "type": "integer"
+    },
+    "k0109": {
+      "type": "integer"
+    },
+    "k0110": {
+      "type": "integer"
+    },
+    "k0111": {
+      "type": "integer"
+    },
+    "k0112": {
+      "type": "integer"
+    },
+    "k0113": {
+      "type": "integer"
+    },
+    "k0114": {
+      "type": "integer"
+    },
+    "k0115": {
+      "type": "integer"
+    },
+    "k0116": {
+      "type": "integer"
+    },
+    "k0117": {
+      "type": "integer"
+    },
+    "k0118": {
+      "type": "integer"
+    },
+    "k0119": {
+      "type": "integer"
+    },
+    "k0120": {
+      "type": "integer"
+    },
+    "k0121": {
+      "type": "integer"
+    },
+    "k0122": {
+      "type": "integer"
+    },
+    "k0123": {
+      "type": "integer"
+    },
+    "k0124": {
+      "type": "integer"
+    },
+    "k0125": {
+      "type": "integer"
+    },
+    "k0126": {
+      "type": "integer"
+    },
+    "k0127": {
+      "type": "integer"
+    },
+    "k0128": {
+      "type": "integer"
+    },
+    "k0129": {
+      "type": "integer"
+    },
+    "k0130": {
+      "type": "integer"
+    },
+    "k0131": {
+      "type": "integer"
+    },
+    "k0132": {
+      "type": "integer"
+    },
+    "k0133": {
+      "type": "integer"
+    },
+    "k0134": {
+      "type": "integer"
+    },
+    "k0135": {
+      "type": "integer"
+    },
+    "k0136": {
+      "type": "integer"
+    },
+    "k0137": {
+      "type": "integer"
+    },
+    "k0138": {
+      "type": "integer"
+    },
+    "k0139": {
+      "type": "integer"
+    },
+    "k0140": {
+      "type": "integer"
+    },
+    "k0141": {
+      "type": "integer"
+    },
+    "k0142": {
+      "type": "integer"
+    },
+    "k0143": {
+      "type": "integer"
+    },
+    "k0144": {
+      "type": "integer"
+    },
+    "k0145": {
+      "type": "integer"
+    },
+    "k0146": {
+      "type": "integer"
+    },
+    "k0147": {
+      "type": "integer"
+    },
+    "k0148": {
+      "type": "integer"
+    },
+    "k0149": {
+      "type": "integer"
+    },
+    "k0150": {
+      "type": "integer"
+    },
+    "k0151": {
+      "type": "integer"
+    },
+    "k0152": {
+      "type": "integer"
+    },
+    "k0153": {
+      "type": "integer"
+    },
+    "k0154": {
+      "type": "integer"
+    },
+    "k0155": {
+      "type": "integer"
+    },
+    "k0156": {
+      "type": "integer"
+    },
+    "k0157": {
+      "type": "integer"
+    },
+    "k0158": {
+      "type": "integer"
+    },
+    "k0159": {
+      "type": "integer"
+    },
+    "k0160": {
+      "type": "integer"
+    },
+    "k0161": {
+      "type": "integer"
+    },
+    "k0162": {
+      "type": "integer"
+    },
+    "k0163": {
+      "type": "integer"
+    },
+    "k0164": {
+      "type": "integer"
+    },
+    "k0165": {
+      "type": "integer"
+    },
+    "k0166": {
+      "type": "integer"
+    },
+    "k0167": {
+      "type": "integer"
+    },
+    "k0168": {
+      "type": "integer"
+    },
+    "k0169": {
+      "type": "integer"
+    },
+    "k0170": {
+      "type": "integer"
+    },
+    "k0171": {
+      "type": "integer"
+    },
+    "k0172": {
+      "type": "integer"
+    },
+    "k0173": {
+      "type": "integer"
+    },
+    "k0174": {
+      "type": "integer"
+    },
+    "k0175": {
+      "type": "integer"
+    },
+    "k0176": {
+      "type": "integer"
+    },
+    "k0177": {
+      "type": "integer"
+    },
+    "k0178": {
+      "type": "integer"
+    },
+    "k0179": {
+      "type": "integer"
+    },
+    "k0180": {
+      "type": "integer"
+    },
+    "k0181": {
+      "type": "integer"
+    },
+    "k0182": {
+      "type": "integer"
+    },
+    "k0183": {
+      "type": "integer"
+    },
+    "k0184": {
+      "type": "integer"
+    },
+    "k0185": {
+      "type": "integer"
+    },
+    "k0186": {
+      "type": "integer"
+    },
+    "k0187": {
+      "type": "integer"
+    },
+    "k0188": {
+      "type": "integer"
+    },
+    "k0189": {
+      "type": "integer"
+    },
+    "k0190": {
+      "type": "integer"
+    },
+    "k0191": {
+      "type": "integer"
+    },
+    "k0192": {
+      "type": "integer"
+    },
+    "k0193": {
+      "type": "integer"
+    },
+    "k0194": {
+      "type": "integer"
+    },
+    "k0195": {
+      "type": "integer"
+    },
+    "k0196": {
+      "type": "integer"
+    },
+    "k0197": {
+      "type": "integer"
+    },
+    "k0198": {
+      "type": "integer"
+    },
+    "k0199": {
+      "type": "integer"
+    },
+    "k0200": {
+      "type": "integer"
+    },
+    "k0201": {
+      "type": "integer"
+    },
+    "k0202": {
+      "type": "integer"
+    },
+    "k0203": {
+      "type": "integer"
+    },
+    "k0204": {
+      "type": "integer"
+    },
+    "k0205": {
+      "type": "integer"
+    },
+    "k0206": {
+      "type": "integer"
+    },
+    "k0207": {
+      "type": "integer"
+    },
+    "k0208": {
+      "type": "integer"
+    },
+    "k0209": {
+      "type": "integer"
+    },
+    "k0210": {
+      "type": "integer"
+    },
+    "k0211": {
+      "type": "integer"
+    },
+    "k0212": {
+      "type": "integer"
+    },
+    "k0213": {
+      "type": "integer"
+    },
+    "k0214": {
+      "type": "integer"
+    },
+    "k0215": {
+      "type": "integer"
+    },
+    "k0216": {
+      "type": "integer"
+    },
+    "k0217": {
+      "type": "integer"
+    },
+    "k0218": {
+      "type": "integer"
+    },
+    "k0219": {
+      "type": "integer"
+    },
+    "k0220": {
+      "type": "integer"
+    },
+    "k0221": {
+      "type": "integer"
+    },
+    "k0222": {
+      "type": "integer"
+    },
+    "k0223": {
+      "type": "integer"
+    },
+    "k0224": {
+      "type": "integer"
+    },
+    "k0225": {
+      "type": "integer"
+    },
+    "k0226": {
+      "type": "integer"
+    },
+    "k0227": {
+      "type": "integer"
+    },
+    "k0228": {
+      "type": "integer"
+    },
+    "k0229": {
+      "type": "integer"
+    },
+    "k0230": {
+      "type": "integer"
+    },
+    "k0231": {
+      "type": "integer"
+    },
+    "k0232": {
+      "type": "integer"
+    },
+    "k0233": {
+      "type": "integer"
+    },
+    "k0234": {
+      "type": "integer"
+    },
+    "k0235": {
+      "type": "integer"
+    },
+    "k0236": {
+      "type": "integer"
+    },
+    "k0237": {
+      "type": "integer"
+    },
+    "k0238": {
+      "type": "integer"
+    },
+    "k0239": {
+      "type": "integer"
+    },
+    "k0240": {
+      "type": "integer"
+    },
+    "k0241": {
+      "type": "integer"
+    },
+    "k0242": {
+      "type": "integer"
+    },
+    "k0243": {
+      "type": "integer"
+    },
+    "k0244": {
+      "type": "integer"
+    },
+    "k0245": {
+      "type": "integer"
+    },
+    "k0246": {
+      "type": "integer"
+    },
+    "k0247": {
+      "type": "integer"
+    },
+    "k0248": {
+      "type": "integer"
+    },
+    "k0249": {
+      "type": "integer"
+    },
+    "k0250": {
+      "type": "integer"
+    },
+    "k0251": {
+      "type": "integer"
+    },
+    "k0252": {
+      "type": "integer"
+    },
+    "k0253": {
+      "type": "integer"
+    },
+    "k0254": {
+      "type": "integer"
+    },
+    "k0255": {
+      "type": "integer"
+    },
+    "k0256": {
+      "type": "integer"
+    },
+    "k0257": {
+      "type": "integer"
+    },
+    "k0258": {
+      "type": "integer"
+    },
+    "k0259": {
+      "type": "integer"
+    },
+    "k0260": {
+      "type": "integer"
+    },
+    "k0261": {
+      "type": "integer"
+    },
+    "k0262": {
+      "type": "integer"
+    },
+    "k0263": {
+      "type": "integer"
+    },
+    "k0264": {
+      "type": "integer"
+    },
+    "k0265": {
+      "type": "integer"
+    },
+    "k0266": {
+      "type": "integer"
+    },
+    "k0267": {
+      "type": "integer"
+    },
+    "k0268": {
+      "type": "integer"
+    },
+    "k0269": {
+      "type": "integer"
+    },
+    "k0270": {
+      "type": "integer"
+    },
+    "k0271": {
+      "type": "integer"
+    },
+    "k0272": {
+      "type": "integer"
+    },
+    "k0273": {
+      "type": "integer"
+    },
+    "k0274": {
+      "type": "integer"
+    },
+    "k0275": {
+      "type": "integer"
+    },
+    "k0276": {
+      "type": "integer"
+    },
+    "k0277": {
+      "type": "integer"
+    },
+    "k0278": {
+      "type": "integer"
+    },
+    "k0279": {
+      "type": "integer"
+    },
+    "k0280": {
+      "type": "integer"
+    },
+    "k0281": {
+      "type": "integer"
+    },
+    "k0282": {
+      "type": "integer"
+    },
+    "k0283": {
+      "type": "integer"
+    },
+    "k0284": {
+      "type": "integer"
+    },
+    "k0285": {
+      "type": "integer"
+    },
+    "k0286": {
+      "type": "integer"
+    },
+    "k0287": {
+      "type": "integer"
+    },
+    "k0288": {
+      "type": "integer"
+    },
+    "k0289": {
+      "type": "integer"
+    },
+    "k0290": {
+      "type": "integer"
+    },
+    "k0291": {
+      "type": "integer"
+    },
+    "k0292": {
+      "type": "integer"
+    },
+    "k0293": {
+      "type": "integer"
+    },
+    "k0294": {
+      "type": "integer"
+    },
+    "k0295": {
+      "type": "integer"
+    },
+    "k0296": {
+      "type": "integer"
+    },
+    "k0297": {
+      "type": "integer"
+    },
+    "k0298": {
+      "type": "integer"
+    },
+    "k0299": {
+      "type": "integer"
+    },
+    "k0300": {
+      "type": "integer"
+    },
+    "k0301": {
+      "type": "integer"
+    },
+    "k0302": {
+      "type": "integer"
+    },
+    "k0303": {
+      "type": "integer"
+    },
+    "k0304": {
+      "type": "integer"
+    },
+    "k0305": {
+      "type": "integer"
+    },
+    "k0306": {
+      "type": "integer"
+    },
+    "k0307": {
+      "type": "integer"
+    },
+    "k0308": {
+      "type": "integer"
+    },
+    "k0309": {
+      "type": "integer"
+    },
+    "k0310": {
+      "type": "integer"
+    },
+    "k0311": {
+      "type": "integer"
+    },
+    "k0312": {
+      "type": "integer"
+    },
+    "k0313": {
+      "type": "integer"
+    },
+    "k0314": {
+      "type": "integer"
+    },
+    "k0315": {
+      "type": "integer"
+    },
+    "k0316": {
+      "type": "integer"
+    },
+    "k0317": {
+      "type": "integer"
+    },
+    "k0318": {
+      "type": "integer"
+    },
+    "k0319": {
+      "type": "integer"
+    },
+    "k0320": {
+      "type": "integer"
+    },
+    "k0321": {
+      "type": "integer"
+    },
+    "k0322": {
+      "type": "integer"
+    },
+    "k0323": {
+      "type": "integer"
+    },
+    "k0324": {
+      "type": "integer"
+    },
+    "k0325": {
+      "type": "integer"
+    },
+    "k0326": {
+      "type": "integer"
+    },
+    "k0327": {
+      "type": "integer"
+    },
+    "k0328": {
+      "type": "integer"
+    },
+    "k0329": {
+      "type": "integer"
+    },
+    "k0330": {
+      "type": "integer"
+    },
+    "k0331": {
+      "type": "integer"
+    },
+    "k0332": {
+      "type": "integer"
+    },
+    "k0333": {
+      "type": "integer"
+    },
+    "k0334": {
+      "type": "integer"
+    },
+    "k0335": {
+      "type": "integer"
+    },
+    "k0336": {
+      "type": "integer"
+    },
+    "k0337": {
+      "type": "integer"
+    },
+    "k0338": {
+      "type": "integer"
+    },
+    "k0339": {
+      "type": "integer"
+    },
+    "k0340": {
+      "type": "integer"
+    },
+    "k0341": {
+      "type": "integer"
+    },
+    "k0342": {
+      "type": "integer"
+    },
+    "k0343": {
+      "type": "integer"
+    },
+    "k0344": {
+      "type": "integer"
+    },
+    "k0345": {
+      "type": "integer"
+    },
+    "k0346": {
+      "type": "integer"
+    },
+    "k0347": {
+      "type": "integer"
+    },
+    "k0348": {
+      "type": "integer"
+    },
+    "k0349": {
+      "type": "integer"
+    },
+    "k0350": {
+      "type": "integer"
+    },
+    "k0351": {
+      "type": "integer"
+    },
+    "k0352": {
+      "type": "integer"
+    },
+    "k0353": {
+      "type": "integer"
+    },
+    "k0354": {
+      "type": "integer"
+    },
+    "k0355": {
+      "type": "integer"
+    },
+    "k0356": {
+      "type": "integer"
+    },
+    "k0357": {
+      "type": "integer"
+    },
+    "k0358": {
+      "type": "integer"
+    },
+    "k0359": {
+      "type": "integer"
+    },
+    "k0360": {
+      "type": "integer"
+    },
+    "k0361": {
+      "type": "integer"
+    },
+    "k0362": {
+      "type": "integer"
+    },
+    "k0363": {
+      "type": "integer"
+    },
+    "k0364": {
+      "type": "integer"
+    },
+    "k0365": {
+      "type": "integer"
+    },
+    "k0366": {
+      "type": "integer"
+    },
+    "k0367": {
+      "type": "integer"
+    },
+    "k0368": {
+      "type": "integer"
+    },
+    "k0369": {
+      "type": "integer"
+    },
+    "k0370": {
+      "type": "integer"
+    },
+    "k0371": {
+      "type": "integer"
+    },
+    "k0372": {
+      "type": "integer"
+    },
+    "k0373": {
+      "type": "integer"
+    },
+    "k0374": {
+      "type": "integer"
+    },
+    "k0375": {
+      "type": "integer"
+    },
+    "k0376": {
+      "type": "integer"
+    },
+    "k0377": {
+      "type": "integer"
+    },
+    "k0378": {
+      "type": "integer"
+    },
+    "k0379": {
+      "type": "integer"
+    },
+    "k0380": {
+      "type": "integer"
+    },
+    "k0381": {
+      "type": "integer"
+    },
+    "k0382": {
+      "type": "integer"
+    },
+    "k0383": {
+      "type": "integer"
+    },
+    "k0384": {
+      "type": "integer"
+    },
+    "k0385": {
+      "type": "integer"
+    },
+    "k0386": {
+      "type": "integer"
+    },
+    "k0387": {
+      "type": "integer"
+    },
+    "k0388": {
+      "type": "integer"
+    },
+    "k0389": {
+      "type": "integer"
+    },
+    "k0390": {
+      "type": "integer"
+    },
+    "k0391": {
+      "type": "integer"
+    },
+    "k0392": {
+      "type": "integer"
+    },
+    "k0393": {
+      "type": "integer"
+    },
+    "k0394": {
+      "type": "integer"
+    },
+    "k0395": {
+      "type": "integer"
+    },
+    "k0396": {
+      "type": "integer"
+    },
+    "k0397": {
+      "type": "integer"
+    },
+    "k0398": {
+      "type": "integer"
+    },
+    "k0399": {
+      "type": "integer"
+    },
+    "k0400": {
+      "type": "integer"
+    },
+    "k0401": {
+      "type": "integer"
+    },
+    "k0402": {
+      "type": "integer"
+    },
+    "k0403": {
+      "type": "integer"
+    },
+    "k0404": {
+      "type": "integer"
+    },
+    "k0405": {
+      "type": "integer"
+    },
+    "k0406": {
+      "type": "integer"
+    },
+    "k0407": {
+      "type": "integer"
+    },
+    "k0408": {
+      "type": "integer"
+    },
+    "k0409": {
+      "type": "integer"
+    },
+    "k0410": {
+      "type": "integer"
+    },
+    "k0411": {
+      "type": "integer"
+    },
+    "k0412": {
+      "type": "integer"
+    },
+    "k0413": {
+      "type": "integer"
+    },
+    "k0414": {
+      "type": "integer"
+    },
+    "k0415": {
+      "type": "integer"
+    },
+    "k0416": {
+      "type": "integer"
+    },
+    "k0417": {
+      "type": "integer"
+    },
+    "k0418": {
+      "type": "integer"
+    },
+    "k0419": {
+      "type": "integer"
+    },
+    "k0420": {
+      "type": "integer"
+    },
+    "k0421": {
+      "type": "integer"
+    },
+    "k0422": {
+      "type": "integer"
+    },
+    "k0423": {
+      "type": "integer"
+    },
+    "k0424": {
+      "type": "integer"
+    },
+    "k0425": {
+      "type": "integer"
+    },
+    "k0426": {
+      "type": "integer"
+    },
+    "k0427": {
+      "type": "integer"
+    },
+    "k0428": {
+      "type": "integer"
+    },
+    "k0429": {
+      "type": "integer"
+    },
+    "k0430": {
+      "type": "integer"
+    },
+    "k0431": {
+      "type": "integer"
+    },
+    "k0432": {
+      "type": "integer"
+    },
+    "k0433": {
+      "type": "integer"
+    },
+    "k0434": {
+      "type": "integer"
+    },
+    "k0435": {
+      "type": "integer"
+    },
+    "k0436": {
+      "type": "integer"
+    },
+    "k0437": {
+      "type": "integer"
+    },
+    "k0438": {
+      "type": "integer"
+    },
+    "k0439": {
+      "type": "integer"
+    },
+    "k0440": {
+      "type": "integer"
+    },
+    "k0441": {
+      "type": "integer"
+    },
+    "k0442": {
+      "type": "integer"
+    },
+    "k0443": {
+      "type": "integer"
+    },
+    "k0444": {
+      "type": "integer"
+    },
+    "k0445": {
+      "type": "integer"
+    },
+    "k0446": {
+      "type": "integer"
+    },
+    "k0447": {
+      "type": "integer"
+    },
+    "k0448": {
+      "type": "integer"
+    },
+    "k0449": {
+      "type": "integer"
+    },
+    "k0450": {
+      "type": "integer"
+    },
+    "k0451": {
+      "type": "integer"
+    },
+    "k0452": {
+      "type": "integer"
+    },
+    "k0453": {
+      "type": "integer"
+    },
+    "k0454": {
+      "type": "integer"
+    },
+    "k0455": {
+      "type": "integer"
+    },
+    "k0456": {
+      "type": "integer"
+    },
+    "k0457": {
+      "type": "integer"
+    },
+    "k0458": {
+      "type": "integer"
+    },
+    "k0459": {
+      "type": "integer"
+    },
+    "k0460": {
+      "type": "integer"
+    },
+    "k0461": {
+      "type": "integer"
+    },
+    "k0462": {
+      "type": "integer"
+    },
+    "k0463": {
+      "type": "integer"
+    },
+    "k0464": {
+      "type": "integer"
+    },
+    "k0465": {
+      "type": "integer"
+    },
+    "k0466": {
+      "type": "integer"
+    },
+    "k0467": {
+      "type": "integer"
+    },
+    "k0468": {
+      "type": "integer"
+    },
+    "k0469": {
+      "type": "integer"
+    },
+    "k0470": {
+      "type": "integer"
+    },
+    "k0471": {
+      "type": "integer"
+    },
+    "k0472": {
+      "type": "integer"
+    },
+    "k0473": {
+      "type": "integer"
+    },
+    "k0474": {
+      "type": "integer"
+    },
+    "k0475": {
+      "type": "integer"
+    },
+    "k0476": {
+      "type": "integer"
+    },
+    "k0477": {
+      "type": "integer"
+    },
+    "k0478": {
+      "type": "integer"
+    },
+    "k0479": {
+      "type": "integer"
+    },
+    "k0480": {
+      "type": "integer"
+    },
+    "k0481": {
+      "type": "integer"
+    },
+    "k0482": {
+      "type": "integer"
+    },
+    "k0483": {
+      "type": "integer"
+    },
+    "k0484": {
+      "type": "integer"
+    },
+    "k0485": {
+      "type": "integer"
+    },
+    "k0486": {
+      "type": "integer"
+    },
+    "k0487": {
+      "type": "integer"
+    },
+    "k0488": {
+      "type": "integer"
+    },
+    "k0489": {
+      "type": "integer"
+    },
+    "k0490": {
+      "type": "integer"
+    },
+    "k0491": {
+      "type": "integer"
+    },
+    "k0492": {
+      "type": "integer"
+    },
+    "k0493": {
+      "type": "integer"
+    },
+    "k0494": {
+      "type": "integer"
+    },
+    "k0495": {
+      "type": "integer"
+    },
+    "k0496": {
+      "type": "integer"
+    },
+    "k0497": {
+      "type": "integer"
+    },
+    "k0498": {
+      "type": "integer"
+    },
+    "k0499": {
+      "type": "integer"
+    },
+    "k0500": {
+      "type": "integer"
+    },
+    "k0501": {
+      "type": "integer"
+    },
+    "k0502": {
+      "type": "integer"
+    },
+    "k0503": {
+      "type": "integer"
+    },
+    "k0504": {
+      "type": "integer"
+    },
+    "k0505": {
+      "type": "integer"
+    },
+    "k0506": {
+      "type": "integer"
+    },
+    "k0507": {
+      "type": "integer"
+    },
+    "k0508": {
+      "type": "integer"
+    },
+    "k0509": {
+      "type": "integer"
+    },
+    "k0510": {
+      "type": "integer"
+    },
+    "k0511": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "k0000",
+    "k0001",
+    "k0002",
+    "k0003",
+    "k0004",
+    "k0005",
+    "k0006",
+    "k0007",
+    "k0008",
+    "k0009",
+    "k0010",
+    "k0011",
+    "k0012",
+    "k0013",
+    "k0014",
+    "k0015",
+    "k0016",
+    "k0017",
+    "k0018",
+    "k0019",
+    "k0020",
+    "k0021",
+    "k0022",
+    "k0023",
+    "k0024",
+    "k0025",
+    "k0026",
+    "k0027",
+    "k0028",
+    "k0029",
+    "k0030",
+    "k0031",
+    "k0032",
+    "k0033",
+    "k0034",
+    "k0035",
+    "k0036",
+    "k0037",
+    "k0038",
+    "k0039",
+    "k0040",
+    "k0041",
+    "k0042",
+    "k0043",
+    "k0044",
+    "k0045",
+    "k0046",
+    "k0047",
+    "k0048",
+    "k0049",
+    "k0050",
+    "k0051",
+    "k0052",
+    "k0053",
+    "k0054",
+    "k0055",
+    "k0056",
+    "k0057",
+    "k0058",
+    "k0059",
+    "k0060",
+    "k0061",
+    "k0062",
+    "k0063",
+    "k0064",
+    "k0065",
+    "k0066",
+    "k0067",
+    "k0068",
+    "k0069",
+    "k0070",
+    "k0071",
+    "k0072",
+    "k0073",
+    "k0074",
+    "k0075",
+    "k0076",
+    "k0077",
+    "k0078",
+    "k0079",
+    "k0080",
+    "k0081",
+    "k0082",
+    "k0083",
+    "k0084",
+    "k0085",
+    "k0086",
+    "k0087",
+    "k0088",
+    "k0089",
+    "k0090",
+    "k0091",
+    "k0092",
+    "k0093",
+    "k0094",
+    "k0095",
+    "k0096",
+    "k0097",
+    "k0098",
+    "k0099",
+    "k0100",
+    "k0101",
+    "k0102",
+    "k0103",
+    "k0104",
+    "k0105",
+    "k0106",
+    "k0107",
+    "k0108",
+    "k0109",
+    "k0110",
+    "k0111",
+    "k0112",
+    "k0113",
+    "k0114",
+    "k0115",
+    "k0116",
+    "k0117",
+    "k0118",
+    "k0119",
+    "k0120",
+    "k0121",
+    "k0122",
+    "k0123",
+    "k0124",
+    "k0125",
+    "k0126",
+    "k0127"
+  ],
+  "type": "object"
+}

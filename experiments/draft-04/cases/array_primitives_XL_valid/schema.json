@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "items": {
+    "type": "integer"
+  },
+  "maxItems": 8192,
+  "minItems": 8192,
+  "type": "array"
+}

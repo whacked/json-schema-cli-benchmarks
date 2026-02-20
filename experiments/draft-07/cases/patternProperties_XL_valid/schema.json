@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "patternProperties": {
+    "^p0_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p10_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p11_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p12_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p13_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p14_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p15_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p1_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p2_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p3_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p4_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p5_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p6_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p7_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p8_[a-z]+$": {
+      "type": "integer"
+    },
+    "^p9_[a-z]+$": {
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
