@@ -522,7 +522,7 @@ ORDER BY sys_hostname, tool, mode</textarea>
           const hasFuzzySearch = values.length > FUZZY_THRESHOLD;
           if (hasFuzzySearch) {
             filterFuse[col] = new Fuse(values, {
-              threshold: 0.2,
+              threshold: 0.1,
               ignoreLocation: true,
               includeScore: true
             });
